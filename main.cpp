@@ -8,14 +8,13 @@ bool testEmptyVector()
 
 int main()
 {
-  using test_t = std::pair< const char*, bool(*)() >;
+  using test_t = std::pair< const char *, bool(*)() >;
   test_t tests[] = {
-      {"Empty vector", testEmptyVector()}
+    {"Empty vector", testEmptyVector}
   };
-
-  const size_t count = sizeof(tests)/sizeof(test_t);
+  const size_t count = sizeof(tests) / sizeof(test_t);
+  std::cout << std::boolalpha;
   for (size_t i = 0; i < count; ++i) {
-    std::cout << tests[i].first << ' ' << tests[i].second << '\n';
+    std::cout << tests[i].first << ": " << tests[i].second() << "\n";
   }
-
 }
