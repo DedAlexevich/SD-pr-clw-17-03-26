@@ -3,7 +3,8 @@
 
 bool testEmptyVector()
 {
-  return false;
+  kuznetsov::Vector< int > v;
+  return v.isEmpty();
 }
 
 int main()

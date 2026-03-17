@@ -7,6 +7,7 @@ namespace kuznetsov {
   struct Vector {
     Vector();
     ~Vector();
+    bool isEmpty() const noexcept;
   private:
     T* data_;
     size_t size_, cap_;
@@ -26,6 +27,13 @@ kuznetsov::Vector< T >::~Vector()
 {
 
 }
+
+template< class T >
+bool kuznetsov::Vector<T>::isEmpty() const noexcept
+{
+  return false;
+}
+
 #endif
 
 
