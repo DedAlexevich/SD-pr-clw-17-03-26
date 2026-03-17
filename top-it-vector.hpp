@@ -25,13 +25,13 @@ kuznetsov::Vector< T >::Vector():
 template< class T >
 kuznetsov::Vector< T >::~Vector()
 {
-
+  delete[] data_;
 }
 
 template< class T >
 bool kuznetsov::Vector<T>::isEmpty() const noexcept
 {
-  return false;
+  return !size_;
 }
 
 #endif
