@@ -1,10 +1,5 @@
 #include <iostream>
 
-template< class T >
-struct Vector {
-  T* data;
-  size_t size, cap;
-};
 
 int main()
 {}
