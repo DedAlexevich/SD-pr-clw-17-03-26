@@ -15,7 +15,11 @@ int main()
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
+  bool pass = true;
   for (size_t i = 0; i < count; ++i) {
-    std::cout << tests[i].first << ": " << tests[i].second() << "\n";
+    bool res  = tests[i].second();
+    std::cout << tests[i].first << ": " << res << "\n";
+    pass = pass && res;
   }
+  std::cout << "Total: " << pass << '\n';
 }
