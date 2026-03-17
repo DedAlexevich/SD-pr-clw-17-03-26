@@ -7,7 +7,21 @@ namespace kuznetsov {
   struct Vector {
     Vector();
     ~Vector();
+    Vector(const Vector&);
+    Vector(Vector&&);
+    Vector& operator=(const Vector&);
+    Vector& operator=(Vector&&);
+
     bool isEmpty() const noexcept;
+    size_t getSize() const noexcept;
+    size_t getCapacity() const noexcept;
+
+    void pushBack(const T& v);
+    void popBack();
+    void insert(size_t pos, const T& v);
+    void erase(size_t i);
+    void erase(size_t start, size_t count);
+    void clear();
   private:
     T* data_;
     size_t size_, cap_;
@@ -29,9 +43,15 @@ kuznetsov::Vector< T >::~Vector()
 }
 
 template< class T >
-bool kuznetsov::Vector<T>::isEmpty() const noexcept
+bool kuznetsov::Vector< T >::isEmpty() const noexcept
 {
   return !size_;
+}
+
+template< class T >
+void kuznetsov::Vector< T >::pushBack(const T& v)
+{
+
 }
 
 #endif

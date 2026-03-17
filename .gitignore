@@ -1,2 +1,5 @@
 Makefile
+main
+main.o
+main.d
 
