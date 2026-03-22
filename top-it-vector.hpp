@@ -64,6 +64,7 @@ size_t kuznetsov::Vector<T>::getCapacity() const noexcept
 template< class T >
 void kuznetsov::Vector<T>::popBack()
 {
+  size_--;
 }
 
 template< class T >
