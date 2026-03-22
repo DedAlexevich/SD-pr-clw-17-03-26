@@ -69,7 +69,24 @@ void kuznetsov::Vector<T>::popBack()
 template< class T >
 void kuznetsov::Vector< T >::pushBack(const T& v)
 {
-
+  if (size_ < cap_ - 1) {
+    data_[size_ + 1] = v;
+    size_++;
+    return;
+  }
+  T* newData = new T[cap_ * 1.5];
+  try {
+    for (size_t i = 0; i < size_; ++i) {
+      newData[i] = data_[i];
+    }
+    newData[size_] = v;
+    size_++;
+  } catch (...) {
+    delete[] newData;
+    throw;
+  }
+  delete[] data_;
+  data_ = newData;
 }
 
 #endif
