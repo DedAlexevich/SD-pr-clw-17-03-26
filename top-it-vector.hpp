@@ -18,6 +18,7 @@ namespace kuznetsov {
 
     void pushBack(const T& v);
     void popBack();
+
     void insert(size_t pos, const T& v);
     void erase(size_t i);
     void erase(size_t start, size_t count);
@@ -45,7 +46,24 @@ kuznetsov::Vector< T >::~Vector()
 template< class T >
 bool kuznetsov::Vector< T >::isEmpty() const noexcept
 {
-  return !size_;
+  return !size_ or !data_;
+}
+
+template< class T >
+size_t kuznetsov::Vector<T>::getSize() const noexcept
+{
+  return size_;
+}
+
+template< class T >
+size_t kuznetsov::Vector<T>::getCapacity() const noexcept
+{
+  return cap_;
+}
+
+template< class T >
+void kuznetsov::Vector<T>::popBack()
+{
 }
 
 template< class T >
