@@ -23,6 +23,8 @@ namespace kuznetsov {
     void erase(size_t i);
     void erase(size_t start, size_t count);
     void clear();
+
+    T& at(size_t pos);
   private:
     T* data_;
     size_t size_, cap_;
@@ -70,12 +72,13 @@ void kuznetsov::Vector<T>::popBack()
 template< class T >
 void kuznetsov::Vector< T >::pushBack(const T& v)
 {
-  if (size_ < cap_ - 1) {
-    data_[size_ + 1] = v;
+  if (size_ + 1 < cap_) {
+    data_[size_] = v;
     size_++;
     return;
   }
-  T* newData = new T[cap_ * 1.5];
+  T* newData = new T[cap_ * 1.5 + 1];
+  cap_ = cap_ * 1.5 + 1;
   try {
     for (size_t i = 0; i < size_; ++i) {
       newData[i] = data_[i];
@@ -90,6 +93,11 @@ void kuznetsov::Vector< T >::pushBack(const T& v)
   data_ = newData;
 }
 
+template< class T >
+T& kuznetsov::Vector<T>::at(size_t pos)
+{
+  return data_[pos];
+}
 #endif
 
 
