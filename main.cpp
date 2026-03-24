@@ -45,6 +45,30 @@ bool testPopFromVector()
   return v.isEmpty();
 }
 
+bool testElementAccess()
+{
+  kuznetsov::Vector< int > v;
+  v.pushBack(1);
+  try {
+    int& val = v[0];
+    return val == 1;
+  } catch (...) {
+    return false;
+  }
+}
+
+bool testElementOutOfBoundAccess()
+{
+  kuznetsov::Vector< int > v;
+  try {
+    int& val = v.at(0);
+    return false;
+  } catch (const std::out_of_range& e) {
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
 
 int main()
 {
@@ -55,6 +79,8 @@ int main()
     {"Push Into Vector", testPushIntoVector},
     {"Pop From Vector", testPopFromVector},
     {"Get Size", testGetSize},
+    {"Element Access", testElementAccess},
+    {"Element Access Out of Bound", testElementOutOfBoundAccess}
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
