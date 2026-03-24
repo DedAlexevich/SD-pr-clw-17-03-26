@@ -111,6 +111,26 @@ bool testCopyNoneEmptyVector()
   return v == cv;
 }
 
+bool testInsert()
+{
+  auto vect = kuznetsov::Vector< int >();
+  vect.pushBack(1);
+  vect.pushBack(2);
+  vect.pushBack(3);
+  vect.pushBack(4);
+  vect.pushBack(5);
+  vect.insert(1, 8);
+  vect.insert(3, 7);
+  vect.insert(5, 12);
+  vect.insert(0, 23);
+  int control[] = {23, 1, 8, 2, 7, 3, 12, 4, 5};
+  bool res = vect.getSize() == 9;
+  for (size_t i = 0; res && i < vect.getSize(); i++) {
+    res = res && (vect[i] == control[i]);
+  }
+  return res;
+}
+
 int main()
 {
   using test_t = std::pair< const char *, bool(*)() >;
@@ -125,19 +145,22 @@ int main()
     {"Element const Access", testElementConstAccess},
     {"Element const Access Out of Bound", testElementOutOfBoundConstAccess},
     {"Copy Empty Vector", testCopyConstractor},
-    {"Copy None Empty Vector", testCopyNoneEmptyVector}
-
+    {"Copy None Empty Vector", testCopyNoneEmptyVector},
+    {"Insert", testInsert}
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
+  size_t succesed = 0;
+  size_t failed = 0;
   bool pass = true;
   for (size_t i = 0; i < count; ++i) {
     bool res  = tests[i].second();
+    succesed += res;
+    failed += !res;
     std::cout << tests[i].first << ": " << res << "\n";
     pass = pass && res;
   }
   std::cout << "Total: " << pass << '\n';
-  // count of passed/failed tests
-  //Print only failed tests
-  //Print nothing if all tests passed
+  std::cout << "Passed: " << succesed << '\n';
+  std::cout << "Failed: " << failed << '\n';
 }
