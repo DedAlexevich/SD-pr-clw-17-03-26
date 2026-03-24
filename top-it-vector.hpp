@@ -34,6 +34,8 @@ namespace kuznetsov {
     T* data_;
     size_t size_, cap_;
   };
+  template< class T >
+  bool operator==(const Vector< T >& lhs, const Vector< T >& rhs);
 }
 
 template< class T >
@@ -125,6 +127,29 @@ template< class T >
 const T& kuznetsov::Vector<T>::operator[](size_t i) const noexcept
 {
   return data_[i];
+}
+
+template< class T >
+kuznetsov::Vector<T>::Vector(const Vector& other):
+  data_(new T[other.cap_]),
+  size_(0),
+  cap_(other.cap_)
+{
+  for (size_t i = 0; i < other.size_; ++i) {
+    data_[i] = other.data_[i];
+    size_++;
+  }
+}
+
+template< class T >
+bool kuznetsov::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
+{
+  bool res = lhs.size_ == rhs.size_;
+  res = res && (lhs.cap_ == rhs.cap_);
+  for (size_t i = 0; i < lhs.size_; ++i) {
+    res = res && (lhs[i] == rhs[i]);
+  }
+  return res;
 }
 
 #endif
