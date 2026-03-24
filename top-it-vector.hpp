@@ -131,13 +131,18 @@ const T& kuznetsov::Vector<T>::operator[](size_t i) const noexcept
 
 template< class T >
 kuznetsov::Vector<T>::Vector(const Vector& other):
-  data_(new T[other.cap_]),
+  data_(other.size_ ? new T[other.size_] : nullptr),
   size_(0),
-  cap_(other.cap_)
+  cap_(other.size_)
 {
   for (size_t i = 0; i < other.size_; ++i) {
-    data_[i] = other.data_[i];
-    size_++;
+    try {
+      data_[i] = other.data_[i];
+      size_++;
+    } catch (...) {
+     delete[] data_;
+      throw;
+    }
   }
 }
 
