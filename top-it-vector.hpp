@@ -101,7 +101,8 @@ void kuznetsov::Vector< T >::pushBack(const T& v)
 template< class T >
 T& kuznetsov::Vector<T>::at(size_t pos)
 {
-  return  const_cast< T& >(static_cast< const Vector< T >* >(this)->at(pos));
+  const Vector< T >* cthis = this ;
+  return  const_cast< T& >(cthis->at(pos));
 }
 
 template< class T >
@@ -110,13 +111,14 @@ const T& kuznetsov::Vector<T>::at(size_t pos) const
   if (pos >= size_) {
     throw std::out_of_range("Out of size array");
   }
-  return data_[pos];
+  return (*this)[pos];
 }
 
 template< class T >
 T& kuznetsov::Vector<T>::operator[](size_t i) noexcept
 {
-  return data_[i];
+  const Vector* cthis = this;
+  return const_cast< T& >((*cthis)[i]);
 }
 
 template< class T >
