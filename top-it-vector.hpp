@@ -160,7 +160,6 @@ template< class T >
 bool kuznetsov::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
 {
   bool res = lhs.getSize() == rhs.getSize();
-  res = res && (lhs.getCapacity() == rhs.getCapacity());
   for (size_t i = 0; i < lhs.getSize(); ++i) {
     res = res && (lhs[i] == rhs[i]);
   }
@@ -178,10 +177,24 @@ void kuznetsov::Vector< T >::swap(Vector< T >& rhs) noexcept
 template< class T >
 kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(const Vector& rhs)
 {
-  if (this == &rhs) {
-    return *this;
-  }
   Vector< T > cpy(rhs);
+  swap(cpy);
+  return *this;
+}
+
+template< class T >
+kuznetsov::Vector<T>::Vector(Vector&& o):
+  data_(o.data_),
+  size_(o.size_),
+  cap_(o.cap_)
+{
+  o.data_ = nullptr;
+}
+
+template< class T >
+kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(Vector&& o)
+{
+  Vector< T > cpy(std::move(o));
   swap(cpy);
   return *this;
 }
