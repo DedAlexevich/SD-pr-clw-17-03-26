@@ -103,6 +103,14 @@ bool testCopyConstractor()
   return v == cv;
 }
 
+bool testCopyNoneEmptyVector()
+{
+  kuznetsov::Vector< int > v;
+  v.pushBack(1);
+  kuznetsov::Vector< int > cv = v;
+  return v == cv;
+}
+
 int main()
 {
   using test_t = std::pair< const char *, bool(*)() >;
@@ -116,7 +124,9 @@ int main()
     {"Element Access Out of Bound", testElementOutOfBoundAccess},
     {"Element const Access", testElementConstAccess},
     {"Element const Access Out of Bound", testElementOutOfBoundConstAccess},
-    {"Copy Constractor", testCopyConstractor}
+    {"Copy Empty Vector", testCopyConstractor},
+    {"Copy None Empty Vector", testCopyNoneEmptyVector}
+
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
