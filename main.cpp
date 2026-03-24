@@ -173,6 +173,25 @@ bool testErase()
   return res;
 }
 
+bool testEraseByRange()
+{
+  kuznetsov::Vector< int > v;
+  v.pushBack(1);
+  v.pushBack(2);
+  v.pushBack(3);
+  v.pushBack(4);
+  v.pushBack(5);
+  v.pushBack(6);
+  v.pushBack(7);
+  v.erase(2, 5);
+  int control[] = {1, 2, 6, 7};
+  bool res = v.getSize() == 4;
+  for (size_t i = 0; i < v.getSize(); ++i) {
+    res = res && v[i] == control[i];
+  }
+  return res;
+}
+
 int main()
 {
   using test_t = std::pair< const char *, bool(*)() >;
@@ -190,7 +209,8 @@ int main()
     {"Copy None Empty Vector", testCopyNoneEmptyVector},
     {"Insert", testInsert},
     {"Insert by range", testInsertByRange},
-    {"Erase", testErase}
+    {"Erase", testErase},
+    {"Erase by range", testEraseByRange},
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
