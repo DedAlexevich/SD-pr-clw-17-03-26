@@ -272,13 +272,61 @@ void kuznetsov::Vector< T >::insert(size_t pos, const Vector< T >& v, size_t sta
   cap_ = newCap;
 }
 
+template< class T >
+void kuznetsov::Vector<T>::clear()
+{
+  delete[] data_;
+  data_ = nullptr;
+  size_ = 0;
+}
+
+template< class T >
+void kuznetsov::Vector<T>::erase(size_t pos)
+{
+  T* copy = new T[size_];
+  try {
+    size_t i = 0;
+    for (; i < pos; ++i) {
+      copy[i] = data_[i];
+    }
+    for (; i < size_ - 1; ++i) {
+      copy[i] = data_[i + 1];
+    }
+  } catch (...) {
+    delete[] copy;
+    throw;
+  }
+  delete[] data_;
+  data_ = copy;
+  size_--;
+}
+
+template< class T >
+void kuznetsov::Vector<T>::erase(size_t start, size_t stop)
+{
+  T* copy = new T[size_];
+  size_t count = stop - start;
+  try {
+    size_t i = 0;
+    for (; i < start; ++i) {
+      copy[i] = data_[i];
+    }
+    for (; i < size_ - count; ++i) {
+      copy[i] = data_[i + count];
+    }
+  } catch (...) {
+    delete[] copy;
+    throw;
+  }
+  delete[] data_;
+  data_ = copy;
+  size_ = size_ - count;
+}
 
 
 // Strong guaratia
 // Tests
-//insert из другого вектора диапазон
 //erase диапазон
-// + tests
 
 // HOMEWORK
 // Iterators random access
