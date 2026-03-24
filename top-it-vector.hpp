@@ -29,6 +29,7 @@ namespace kuznetsov {
     void insert(size_t pos, const T& v);
     void erase(size_t i);
     void erase(size_t start, size_t count);
+
     void clear();
 
     T& at(size_t pos);
@@ -177,6 +178,9 @@ void kuznetsov::Vector< T >::swap(Vector< T >& rhs) noexcept
 template< class T >
 kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(const Vector& rhs)
 {
+  if (this == std::addressof(rhs)) {
+    return *this;
+  }
   Vector< T > cpy(rhs);
   swap(cpy);
   return *this;
@@ -194,10 +198,41 @@ kuznetsov::Vector<T>::Vector(Vector&& o):
 template< class T >
 kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(Vector&& o)
 {
+  if (this == std::addressof(o)) {
+    return *this;
+  }
   Vector< T > cpy(std::move(o));
   swap(cpy);
   return *this;
 }
+
+template< class T >
+void kuznetsov::Vector<T>::insert(size_t pos, const T& v)
+{
+  size_t newCap = cap_ * 1.5 + 1;
+  if (size_ + 1 < cap_) {
+    newCap = cap_;
+  }
+  T* newData = new T[newCap];
+  try {
+    for (size_t i = 0; i < pos; ++i) {
+      newData[i] = data_[i];
+    }
+    newData[pos] = v;
+    for (size_t i = pos + 1; i < size_ + 1; ++i) {
+      newData[i] = data_[i - 1];
+    }
+  } catch (...) {
+    delete[] newData;
+    throw;
+  }
+
+  delete[] data_;
+  data_ = newData;
+  size_++;
+  cap_ = newCap;
+}
+
 // Strong guaratia
 // Tests
 //insert из другого вектора диапазон
