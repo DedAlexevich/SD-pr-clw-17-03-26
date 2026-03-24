@@ -18,6 +18,7 @@ namespace kuznetsov {
     T& operator[](size_t i) noexcept;
     const T& operator[](size_t i) const noexcept;
 
+    void swap(Vector< T >& rhs) noexcept;
     bool isEmpty() const noexcept;
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
@@ -164,6 +165,25 @@ bool kuznetsov::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
     res = res && (lhs[i] == rhs[i]);
   }
   return res;
+}
+
+template< class T >
+void kuznetsov::Vector< T >::swap(Vector< T >& rhs) noexcept
+{
+  std::swap(data_, rhs.data_);
+  std::swap(size_, rhs.size_);
+  std::swap(cap_, rhs.cap_);
+}
+
+template< class T >
+kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(const Vector& rhs)
+{
+  if (this == &rhs) {
+    return *this;
+  }
+  Vector< T > cpy(rhs);
+  swap(cpy);
+  return *this;
 }
 
 #endif
