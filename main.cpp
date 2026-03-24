@@ -185,6 +185,11 @@ bool testInsertByRange()
   for (size_t i = 0; res && i < vect.getSize(); i++) {
     res = res && (vect2[i] == control[i]);
   }
+  try {
+    vect2.insert(7, vect, 0, 100);
+    res = false;
+  } catch (const std::out_of_range& e) {}
+
   return res;
 }
 
@@ -201,6 +206,12 @@ bool testErase()
   bool res = v.getSize() == 4;
   for (size_t i = 0; i < v.getSize(); ++i) {
     res = res && v[i] == control[i];
+  }
+  try {
+    v.erase(100);
+    return false;
+  } catch (const std::out_of_range& e) {
+
   }
   return res;
 }
@@ -220,6 +231,12 @@ bool testEraseByRange()
   bool res = v.getSize() == 4;
   for (size_t i = 0; i < v.getSize(); ++i) {
     res = res && v[i] == control[i];
+  }
+  try {
+    v.erase(100, 3);
+    return false;
+  } catch (const std::out_of_range& e) {
+
   }
   return res;
 }
