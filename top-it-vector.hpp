@@ -9,10 +9,10 @@ namespace kuznetsov {
     ~Vector();
 
     Vector(const Vector&);
-    Vector(Vector&&);
+    Vector(Vector&&) noexcept;
 
     Vector& operator=(const Vector&);
-    Vector& operator=(Vector&&);
+    Vector& operator=(Vector&&) noexcept;
     Vector(size_t size, const T& init);
 
     T& operator[](size_t i) noexcept;
@@ -29,7 +29,7 @@ namespace kuznetsov {
     void insert(size_t pos, const T& v);
     void insert(size_t pos, const Vector< T >& v, size_t start, size_t end);
 
-    void erase(size_t i);
+    void erase(size_t pos);
     void erase(size_t start, size_t count);
 
     void clear();
@@ -80,7 +80,9 @@ size_t kuznetsov::Vector<T>::getCapacity() const noexcept
 template< class T >
 void kuznetsov::Vector<T>::popBack()
 {
-  size_--;
+  if (size_ > 0) {
+    size_--;
+  }
 }
 
 template< class T >
@@ -91,8 +93,8 @@ void kuznetsov::Vector< T >::pushBack(const T& v)
     size_++;
     return;
   }
-  T* newData = new T[cap_ * 1.5 + 1];
-  cap_ = cap_ * 1.5 + 1;
+  size_t newCap = cap_ * 1.5 + 1;
+  T* newData = new T[newCap];
   try {
     for (size_t i = 0; i < size_; ++i) {
       newData[i] = data_[i];
@@ -105,6 +107,7 @@ void kuznetsov::Vector< T >::pushBack(const T& v)
   }
   delete[] data_;
   data_ = newData;
+  cap_ = newCap;
 }
 
 template< class T >
@@ -189,16 +192,18 @@ kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(const Vector& rhs)
 }
 
 template< class T >
-kuznetsov::Vector<T>::Vector(Vector&& o):
+kuznetsov::Vector<T>::Vector(Vector&& o) noexcept :
   data_(o.data_),
   size_(o.size_),
   cap_(o.cap_)
 {
   o.data_ = nullptr;
+  o.size_ = 0;
+  o.cap_ = 0;
 }
 
 template< class T >
-kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(Vector&& o)
+kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(Vector&& o) noexcept
 {
   if (this == std::addressof(o)) {
     return *this;
@@ -242,7 +247,10 @@ template< class T >
 void kuznetsov::Vector< T >::insert(size_t pos, const Vector< T >& v, size_t start, size_t end)
 {
   if (pos > size_) {
-    throw std::out_of_range("position out of range");
+    throw std::out_of_range("position out of range in insert");
+  }
+  if (end >= v.getSize()) {
+    throw std::out_of_range("end of second vector out of range");
   }
   size_t count = (end - start);
   size_t newCap = cap_ + count;
@@ -283,7 +291,10 @@ void kuznetsov::Vector<T>::clear()
 template< class T >
 void kuznetsov::Vector<T>::erase(size_t pos)
 {
-  T* copy = new T[size_];
+  if (pos >= size_) {
+    throw std::out_of_range("pos out of range in erase");
+  }
+  T* copy = new T[size_ - 1];
   try {
     size_t i = 0;
     for (; i < pos; ++i) {
@@ -302,10 +313,15 @@ void kuznetsov::Vector<T>::erase(size_t pos)
 }
 
 template< class T >
-void kuznetsov::Vector<T>::erase(size_t start, size_t stop)
+void kuznetsov::Vector<T>::erase(size_t start, size_t count)
 {
-  T* copy = new T[size_];
-  size_t count = stop - start;
+  if (start >= size_) {
+    throw std::out_of_range("start out of range in erase");
+  }
+  if (start + count >= size_) {
+    count = size_ - start;
+  }
+  T* copy = new T[size_ - count];
   try {
     size_t i = 0;
     for (; i < start; ++i) {
@@ -323,16 +339,9 @@ void kuznetsov::Vector<T>::erase(size_t start, size_t stop)
   size_ = size_ - count;
 }
 
-
-// Strong guaratia
-// Tests
-//erase диапазон
-
 // HOMEWORK
 // Iterators random access
 // Several insert erase with iterators (3 per method + tests)
-
-
 
 #endif
 
