@@ -27,6 +27,8 @@ namespace kuznetsov {
     void popBack();
 
     void insert(size_t pos, const T& v);
+    void insert(size_t pos, const Vector< T >& v, size_t start, size_t end);
+
     void erase(size_t i);
     void erase(size_t start, size_t count);
 
@@ -207,31 +209,70 @@ kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(Vector&& o)
 }
 
 template< class T >
-void kuznetsov::Vector<T>::insert(size_t pos, const T& v)
+void kuznetsov::Vector< T >::insert(size_t pos, const T& v)
 {
+  if (pos > size_) {
+    throw std::out_of_range("position out of range");
+  }
   size_t newCap = cap_ * 1.5 + 1;
   if (size_ + 1 < cap_) {
     newCap = cap_;
   }
   T* newData = new T[newCap];
   try {
-    for (size_t i = 0; i < pos; ++i) {
+    size_t i = 0;
+    for (; i < pos; ++i) {
       newData[i] = data_[i];
     }
     newData[pos] = v;
-    for (size_t i = pos + 1; i < size_ + 1; ++i) {
-      newData[i] = data_[i - 1];
+    for (; i < size_; ++i) {
+      newData[i + 1] = data_[i];
     }
   } catch (...) {
     delete[] newData;
     throw;
   }
-
   delete[] data_;
   data_ = newData;
   size_++;
   cap_ = newCap;
 }
+
+template< class T >
+void kuznetsov::Vector< T >::insert(size_t pos, const Vector< T >& v, size_t start, size_t end)
+{
+  if (pos > size_) {
+    throw std::out_of_range("position out of range");
+  }
+  size_t count = (end - start);
+  size_t newCap = cap_ + count;
+  if (size_ + count < cap_) {
+    newCap = cap_;
+  }
+  T* newData = new T[newCap];
+  try {
+    size_t i = 0;
+    for (; i < pos; ++i) {
+      newData[i] = data_[i];
+    }
+    size_t j = 0;
+    for (;j < count; ++j) {
+      newData[i + j] = v.at(start + j);
+    }
+    for (; i < size_; ++i) {
+      newData[i + j] = data_[i];
+    }
+  } catch (...) {
+    delete[] newData;
+    throw;
+  }
+  delete[] data_;
+  data_ = newData;
+  size_ += count;
+  cap_ = newCap;
+}
+
+
 
 // Strong guaratia
 // Tests
