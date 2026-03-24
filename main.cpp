@@ -148,12 +148,27 @@ bool testInsertByRange()
   vect2.pushBack(10);
 
   vect2.insert(2, vect, 1, 4);
-  // 0 1 2 3 4 5 6 7 8 9 10
-  // 6 7 2 3 4 8 9 10
   int control[] = {6, 7, 2, 3, 4, 8, 9, 10};
   bool res = vect2.getSize() == 8;
   for (size_t i = 0; res && i < vect.getSize(); i++) {
     res = res && (vect2[i] == control[i]);
+  }
+  return res;
+}
+
+bool testErase()
+{
+  kuznetsov::Vector< int > v;
+  v.pushBack(1);
+  v.pushBack(2);
+  v.pushBack(3);
+  v.pushBack(4);
+  v.pushBack(5);
+  v.erase(2);
+  int control[] = {1, 2, 4, 5};
+  bool res = v.getSize() == 4;
+  for (size_t i = 0; i < v.getSize(); ++i) {
+    res = res && v[i] == control[i];
   }
   return res;
 }
@@ -174,7 +189,8 @@ int main()
     {"Copy Empty Vector", testCopyConstractor},
     {"Copy None Empty Vector", testCopyNoneEmptyVector},
     {"Insert", testInsert},
-    {"Insert by range", testInsertByRange}
+    {"Insert by range", testInsertByRange},
+    {"Erase", testErase}
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
