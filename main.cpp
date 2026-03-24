@@ -131,6 +131,33 @@ bool testInsert()
   return res;
 }
 
+bool testInsertByRange()
+{
+  kuznetsov::Vector< int > vect;
+  vect.pushBack(1);
+  vect.pushBack(2);
+  vect.pushBack(3);
+  vect.pushBack(4);
+  vect.pushBack(5);
+
+  kuznetsov::Vector< int > vect2;
+  vect2.pushBack(6);
+  vect2.pushBack(7);
+  vect2.pushBack(8);
+  vect2.pushBack(9);
+  vect2.pushBack(10);
+
+  vect2.insert(2, vect, 1, 4);
+  // 0 1 2 3 4 5 6 7 8 9 10
+  // 6 7 2 3 4 8 9 10
+  int control[] = {6, 7, 2, 3, 4, 8, 9, 10};
+  bool res = vect2.getSize() == 8;
+  for (size_t i = 0; res && i < vect.getSize(); i++) {
+    res = res && (vect2[i] == control[i]);
+  }
+  return res;
+}
+
 int main()
 {
   using test_t = std::pair< const char *, bool(*)() >;
@@ -146,7 +173,8 @@ int main()
     {"Element const Access Out of Bound", testElementOutOfBoundConstAccess},
     {"Copy Empty Vector", testCopyConstractor},
     {"Copy None Empty Vector", testCopyNoneEmptyVector},
-    {"Insert", testInsert}
+    {"Insert", testInsert},
+    {"Insert by range", testInsertByRange}
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
