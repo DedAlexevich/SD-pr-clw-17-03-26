@@ -7,10 +7,14 @@ namespace kuznetsov {
   struct Vector {
     Vector();
     ~Vector();
+
     Vector(const Vector&);
     Vector(Vector&&);
+
     Vector& operator=(const Vector&);
     Vector& operator=(Vector&&);
+    T& operator[](size_t i) noexcept;
+    const T& operator[](size_t i) const noexcept;
 
     bool isEmpty() const noexcept;
     size_t getSize() const noexcept;
@@ -25,6 +29,7 @@ namespace kuznetsov {
     void clear();
 
     T& at(size_t pos);
+    const T& at(size_t pos) const;
   private:
     T* data_;
     size_t size_, cap_;
@@ -96,8 +101,33 @@ void kuznetsov::Vector< T >::pushBack(const T& v)
 template< class T >
 T& kuznetsov::Vector<T>::at(size_t pos)
 {
+  if (pos >= size_) {
+    throw std::out_of_range("Out of size array");
+  }
   return data_[pos];
 }
+
+template< class T >
+const T& kuznetsov::Vector<T>::at(size_t pos) const
+{
+  if (pos >= size_) {
+    throw std::out_of_range("Out of size array");
+  }
+  return data_[pos];
+}
+
+template< class T >
+T& kuznetsov::Vector<T>::operator[](size_t i) noexcept
+{
+  return data_[i];
+}
+
+template< class T >
+const T& kuznetsov::Vector<T>::operator[](size_t i) const noexcept
+{
+  return data_[i];
+}
+
 #endif
 
 
