@@ -13,6 +13,8 @@ namespace kuznetsov {
 
     Vector& operator=(const Vector&);
     Vector& operator=(Vector&&);
+    Vector(size_t size, const T& init);
+
     T& operator[](size_t i) noexcept;
     const T& operator[](size_t i) const noexcept;
 
@@ -31,6 +33,7 @@ namespace kuznetsov {
     T& at(size_t pos);
     const T& at(size_t pos) const;
   private:
+    explicit Vector(size_t c);
     T* data_;
     size_t size_, cap_;
   };
@@ -130,19 +133,25 @@ const T& kuznetsov::Vector<T>::operator[](size_t i) const noexcept
 }
 
 template< class T >
-kuznetsov::Vector<T>::Vector(const Vector& other):
-  data_(other.size_ ? new T[other.size_] : nullptr),
-  size_(0),
-  cap_(other.size_)
+kuznetsov::Vector<T>::Vector(const Vector& other): Vector(other.size_)
 {
   for (size_t i = 0; i < other.size_; ++i) {
-    try {
-      data_[i] = other.data_[i];
-      size_++;
-    } catch (...) {
-     delete[] data_;
-      throw;
-    }
+    data_[i] = other.data_[i];
+  }
+}
+
+template< class T >
+kuznetsov::Vector< T >::Vector(size_t c):
+  data_(c ? new T[c] : nullptr),
+  size_(c),
+  cap_(c)
+{}
+
+template< class T >
+kuznetsov::Vector<T>::Vector(size_t size, const T& init): Vector(size)
+{
+  for (size_t i = 0; i < size; ++i) {
+    data_[i] = init;
   }
 }
 
