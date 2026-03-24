@@ -111,6 +111,14 @@ bool testCopyNoneEmptyVector()
   return v == cv;
 }
 
+bool testMoveConstructor()
+{
+  kuznetsov::Vector< int > v(4, 2);
+  kuznetsov::Vector< int > v2(std::move(v));
+  bool res = v.getSize() == 0 && v2.getSize() == 4;
+  return res;
+}
+
 bool testInsert()
 {
   auto vect = kuznetsov::Vector< int >();
@@ -183,7 +191,7 @@ bool testEraseByRange()
   v.pushBack(5);
   v.pushBack(6);
   v.pushBack(7);
-  v.erase(2, 5);
+  v.erase(2, 3);
   int control[] = {1, 2, 6, 7};
   bool res = v.getSize() == 4;
   for (size_t i = 0; i < v.getSize(); ++i) {
@@ -207,6 +215,7 @@ int main()
     {"Element const Access Out of Bound", testElementOutOfBoundConstAccess},
     {"Copy Empty Vector", testCopyConstractor},
     {"Copy None Empty Vector", testCopyNoneEmptyVector},
+    {"Move constructor", testMoveConstructor},
     {"Insert", testInsert},
     {"Insert by range", testInsertByRange},
     {"Erase", testErase},
