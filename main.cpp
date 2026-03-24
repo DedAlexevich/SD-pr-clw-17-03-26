@@ -133,6 +133,16 @@ bool testCopyAssignment()
   return res;
 }
 
+bool testMoveAssignment()
+{
+  kuznetsov::Vector< int > v1(5, 3);
+  kuznetsov::Vector< int > v2(3, 4);
+  v2 = std::move(v1);
+  bool res = v2.getSize() == 5 && v1.getSize() == 0;
+  return res;
+}
+
+
 bool testInsert()
 {
   auto vect = kuznetsov::Vector< int >();
@@ -231,6 +241,7 @@ int main()
     {"Copy None Empty Vector", testCopyNoneEmptyVector},
     {"Move constructor", testMoveConstructor},
     {"Copy Assignment", testCopyAssignment},
+    {"Move Assignment", testMoveAssignment},
     {"Insert", testInsert},
     {"Insert by range", testInsertByRange},
     {"Erase", testErase},
