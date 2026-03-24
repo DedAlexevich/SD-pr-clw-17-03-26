@@ -144,9 +144,9 @@ kuznetsov::Vector<T>::Vector(const Vector& other):
 template< class T >
 bool kuznetsov::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
 {
-  bool res = lhs.size_ == rhs.size_;
-  res = res && (lhs.cap_ == rhs.cap_);
-  for (size_t i = 0; i < lhs.size_; ++i) {
+  bool res = lhs.getSize() == rhs.getSize();
+  res = res && (lhs.getCapacity() == rhs.getCapacity());
+  for (size_t i = 0; i < lhs.getSize(); ++i) {
     res = res && (lhs[i] == rhs[i]);
   }
   return res;
