@@ -65,4 +65,7 @@ int main()
     pass = pass && res;
   }
   std::cout << "Total: " << pass << '\n';
+  // count of passed/failed tests
+  //Print only failed tests
+  //Print nothing if all tests passed
 }
