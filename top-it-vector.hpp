@@ -198,6 +198,17 @@ kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(Vector&& o)
   swap(cpy);
   return *this;
 }
+// Strong guaratia
+// Tests
+//insert из другого вектора диапазон
+//erase диапазон
+// + tests
+
+// HOMEWORK
+// Iterators random access
+// Several insert erase with iterators (3 per method + tests)
+
+
 
 #endif
 
