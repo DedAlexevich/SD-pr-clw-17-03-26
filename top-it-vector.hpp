@@ -1,6 +1,8 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 #include <cstddef>
+#include "top-it-iters.hpp"
+
 namespace kuznetsov {
 
   template< class T >
@@ -29,14 +31,24 @@ namespace kuznetsov {
     void insert(size_t pos, const T& v);
     void insert(size_t pos, const Vector< T >& v, size_t start, size_t end);
 
+    void insert(CIter< T > it, const T& v);
+    void insert(CIter< T > it, T&& v);
+    void insert(CIter< T > place, CIter< T > start, CIter< T > end);
+
     void erase(size_t pos);
     void erase(size_t start, size_t count);
+
+    CIter< T > erase(CIter< T > pos);
+    CIter< T > erase(CIter< T > start, CIter< T > end);
+
+
 
     void clear();
 
     T& at(size_t pos);
     const T& at(size_t pos) const;
   private:
+    void generalInsert(size_t pos, T&& v);
     explicit Vector(size_t c);
     T* data_;
     size_t size_, cap_;
@@ -214,7 +226,7 @@ kuznetsov::Vector<T>& kuznetsov::Vector<T>::operator=(Vector&& o) noexcept
 }
 
 template< class T >
-void kuznetsov::Vector< T >::insert(size_t pos, const T& v)
+void kuznetsov::Vector< T >::generalInsert(size_t pos, T&& v)
 {
   if (pos > size_) {
     throw std::out_of_range("position out of range");
@@ -229,7 +241,7 @@ void kuznetsov::Vector< T >::insert(size_t pos, const T& v)
     for (; i < pos; ++i) {
       newData[i] = data_[i];
     }
-    newData[pos] = v;
+    newData[pos] = std::move(v);
     for (; i < size_; ++i) {
       newData[i + 1] = data_[i];
     }
@@ -340,7 +352,6 @@ void kuznetsov::Vector<T>::erase(size_t start, size_t count)
 }
 
 // HOMEWORK
-// Iterators random access
 // Several insert erase with iterators (3 per method + tests)
 
 #endif
