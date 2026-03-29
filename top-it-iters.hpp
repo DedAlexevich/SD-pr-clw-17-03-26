@@ -55,95 +55,95 @@ namespace kuznetsov {
 }
 
 template< class T >
-const T& kuznetsov::CIter<T>::operator*() const noexcept
+const T& kuznetsov::CIter< T >::operator*() const noexcept
 {
   return *ptr_;
 }
 
 template< class T >
-kuznetsov::CIter<T>& kuznetsov::CIter<T>::operator++() noexcept
+kuznetsov::CIter< T >& kuznetsov::CIter< T >::operator++() noexcept
 {
   ++ptr_;
   return *this;
 }
 
 template< class T >
-kuznetsov::CIter<T>& kuznetsov::CIter<T>::operator--() noexcept
+kuznetsov::CIter< T >& kuznetsov::CIter< T >::operator--() noexcept
 {
   --ptr_;
   return *this;
 }
 
 template< class T >
-kuznetsov::CIter<T>& kuznetsov::CIter<T>::operator+=(size_t n) noexcept
+kuznetsov::CIter< T >& kuznetsov::CIter< T >::operator+=(size_t n) noexcept
 {
   ptr_ += n;
   return *this;
 }
 
 template< class T >
-kuznetsov::CIter<T>& kuznetsov::CIter<T>::operator-=(size_t n) noexcept
+kuznetsov::CIter< T >& kuznetsov::CIter< T >::operator-=(size_t n) noexcept
 {
   ptr_ -= n;
   return *this;
 }
 
 template< class T >
-kuznetsov::CIter<T> kuznetsov::CIter<T>::operator+(size_t n) const noexcept
+kuznetsov::CIter< T > kuznetsov::CIter< T >::operator+(size_t n) const noexcept
 {
   return CIter< T >{ptr_ + n};
 }
 
 template< class T >
-kuznetsov::CIter<T> kuznetsov::CIter<T>::operator-(size_t n) const noexcept
+kuznetsov::CIter< T > kuznetsov::CIter< T >::operator-(size_t n) const noexcept
 {
   return CIter< T >{ptr_ - n};
 }
 
 template< class T >
-std::ptrdiff_t kuznetsov::CIter<T>::operator-(const CIter& rhs) const noexcept
+std::ptrdiff_t kuznetsov::CIter< T >::operator-(const CIter& rhs) const noexcept
 {
   return this->ptr_ - rhs.ptr_;
 }
 
 template< class T >
-bool kuznetsov::CIter<T>::operator==(const CIter& rhs) const noexcept
+bool kuznetsov::CIter< T >::operator==(const CIter& rhs) const noexcept
 {
   return this->ptr_ == rhs.ptr_;
 }
 
 template< class T >
-bool kuznetsov::CIter<T>::operator!=(const CIter& rhs) const noexcept
+bool kuznetsov::CIter< T >::operator!=(const CIter& rhs) const noexcept
 {
   return !(*this == rhs);
 }
 
 template< class T >
-bool kuznetsov::CIter<T>::operator>(const CIter& rhs) const noexcept
+bool kuznetsov::CIter< T >::operator>(const CIter& rhs) const noexcept
 {
   return this->ptr_ > rhs.ptr_;
 }
 
 template< class T >
-bool kuznetsov::CIter<T>::operator>=(const CIter& rhs) const noexcept
+bool kuznetsov::CIter< T >::operator>=(const CIter& rhs) const noexcept
 {
   return this->ptr_ >= rhs.ptr_;
 }
 
 template< class T >
-bool kuznetsov::CIter<T>::operator<(const CIter& rhs) const noexcept
+bool kuznetsov::CIter< T >::operator<(const CIter& rhs) const noexcept
 {
   return this->ptr_ < rhs.ptr_;
 }
 
 template< class T >
-bool kuznetsov::CIter<T>::operator<=(const CIter& rhs) const noexcept
+bool kuznetsov::CIter< T >::operator<=(const CIter& rhs) const noexcept
 {
   return this->ptr_ <= rhs.ptr_;
 }
 
 template< class T >
-kuznetsov::CIter<T> kuznetsov::CIter<T>::operator++(int) noexcept
+kuznetsov::CIter< T > kuznetsov::CIter< T >::operator++(int) noexcept
 {
   CIter iter{ptr_};
   ++ptr_;
@@ -151,11 +151,115 @@ kuznetsov::CIter<T> kuznetsov::CIter<T>::operator++(int) noexcept
 }
 
 template< class T >
-kuznetsov::CIter<T> kuznetsov::CIter<T>::operator--(int) noexcept
+kuznetsov::CIter< T > kuznetsov::CIter< T >::operator--(int) noexcept
 {
   CIter iter{ptr_};
   --ptr_;
   return iter;
+}
+
+template< class T >
+T& kuznetsov::Iter< T >::operator*() const noexcept
+{
+  return *ptr_;
+}
+
+template< class T >
+kuznetsov::Iter< T >& kuznetsov::Iter< T >::operator++() noexcept
+{
+  ++ptr_;
+  return *this;
+}
+
+template< class T >
+kuznetsov::Iter< T > kuznetsov::Iter< T >::operator++(int) noexcept
+{
+  Iter it{ptr_};
+  ++ptr_;
+  return it;
+}
+
+template< class T >
+kuznetsov::Iter< T >& kuznetsov::Iter< T >::operator--() noexcept
+{
+  --ptr_;
+  return *this;
+}
+
+template< class T >
+kuznetsov::Iter< T > kuznetsov::Iter< T >::operator--(int) noexcept
+{
+  Iter it{ptr_};
+  --ptr_;
+  return it;
+}
+
+template< class T >
+kuznetsov::Iter< T >& kuznetsov::Iter< T >::operator+=(size_t n) noexcept
+{
+  ptr_ += n;
+  return *this;
+}
+
+template< class T >
+kuznetsov::Iter< T >& kuznetsov::Iter< T >::operator-=(size_t n) noexcept
+{
+  ptr_ -= n;
+  return *this;
+}
+
+template< class T >
+kuznetsov::Iter< T > kuznetsov::Iter< T >::operator+(size_t n) const noexcept
+{
+  return Iter{ptr_ + n};
+}
+
+template< class T >
+kuznetsov::Iter< T > kuznetsov::Iter< T >::operator-(size_t n) const noexcept
+{
+  return Iter{ptr_ - n};
+}
+
+template< class T >
+std::ptrdiff_t kuznetsov::Iter< T >::operator-(const Iter& rhs) const noexcept
+{
+  return ptr_ - rhs.ptr_;
+}
+
+template< class T >
+bool kuznetsov::Iter< T >::operator==(const Iter& rhs) const noexcept
+{
+  return ptr_ == rhs.ptr_;
+}
+
+template< class T >
+bool kuznetsov::Iter< T >::operator!=(const Iter& rhs) const noexcept
+{
+  return !(*this == rhs);
+}
+
+template< class T >
+bool kuznetsov::Iter< T >::operator>(const Iter& rhs) const noexcept
+{
+  return ptr_ > rhs.ptr_;
+}
+
+template< class T >
+bool kuznetsov::Iter< T >::operator>=(const Iter& rhs) const noexcept
+{
+  return ptr_ >= rhs.ptr_;
+}
+
+template< class T >
+bool kuznetsov::Iter< T >::operator<(const Iter& rhs) const noexcept
+{
+  return ptr_ < rhs.ptr_;
+}
+
+template< class T >
+bool kuznetsov::Iter< T >::operator<=(const Iter& rhs) const noexcept
+{
+  return ptr_ <= rhs.ptr_;
 }
 
 #endif
