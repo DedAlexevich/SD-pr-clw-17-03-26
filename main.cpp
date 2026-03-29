@@ -24,14 +24,23 @@ bool testGetCapacity()
   return v.getCapacity() == 1;
 }
 
-bool testPushIntoVector()
+bool testPushBackLValue()
 {
-  kuznetsov::Vector< int > v;
-  v.pushBack(3);
-  v.pushBack(1);
-  bool res = v.getSize() == 2;
-  res = res && v.at(0) == 3;
-  res = res && v.at(1) == 1;
+  kuznetsov::Vector<std::string> v;
+  std::string str = "hello";
+  v.pushBack(str);
+  bool res = v.getSize() == 1;
+  res = res && (v.at(0) == "hello");
+  res = res && (str == "hello");
+  return res;
+}
+
+bool testPushBackRValue()
+{
+  kuznetsov::Vector<std::string> v;
+  v.pushBack(std::string("world"));
+  bool res = v.getSize() == 1;
+  res = res && (v.at(0) == "world");
   return res;
 }
 
@@ -142,7 +151,6 @@ bool testMoveAssignment()
   return res;
 }
 
-
 bool testInsert()
 {
   auto vect = kuznetsov::Vector< int >();
@@ -151,15 +159,48 @@ bool testInsert()
   vect.pushBack(3);
   vect.pushBack(4);
   vect.pushBack(5);
-  vect.insert(1, 8);
-  vect.insert(3, 7);
-  vect.insert(5, 12);
-  vect.insert(0, 23);
+  int a[] {8, 7, 12, 23};
+  vect.insert(1, a[0]);
+  vect.insert(3, a[1]);
+  vect.insert(5, a[2]);
+  vect.insert(0, a[3]);
   int control[] = {23, 1, 8, 2, 7, 3, 12, 4, 5};
   bool res = vect.getSize() == 9;
   for (size_t i = 0; res && i < vect.getSize(); i++) {
     res = res && (vect[i] == control[i]);
   }
+  return res;
+}
+
+bool testMoveInsert()
+{
+  kuznetsov::Vector<std::string> vect;
+  vect.pushBack("one");
+  vect.pushBack("three");
+
+  vect.insert(1, std::move(std::string("two")));
+
+  bool res = vect.getSize() == 3;
+  res = res && (vect[0] == "one");
+  res = res && (vect[1] == "two");
+  res = res && (vect[2] == "three");
+
+  return res;
+}
+
+bool testMoveInsertWithIterator()
+{
+  kuznetsov::Vector<std::string> vect;
+  vect.pushBack("one");
+  vect.pushBack("three");
+
+  vect.insert(vect.cbegin() + 1, std::move(std::string("two")));
+
+  bool res = vect.getSize() == 3;
+  res = res && (vect[0] == "one");
+  res = res && (vect[1] == "two");
+  res = res && (vect[2] == "three");
+
   return res;
 }
 
@@ -298,13 +339,81 @@ bool testInsertByRangeWithIterator()
   return res;
 }
 
+bool testEraseIterator()
+{
+  kuznetsov::Vector<int> v;
+  v.pushBack(1);
+  v.pushBack(2);
+  v.pushBack(3);
+  v.pushBack(4);
+
+  auto it = v.cbegin() + 1;
+  auto ret = v.erase(it);
+
+  bool res = v.getSize() == 3;
+  res = res && (v.at(0) == 1);
+  res = res && (v.at(1) == 3);
+  res = res && (v.at(2) == 4);
+  res = res && (*ret == 3);
+  return res;
+}
+
+bool testEraseIteratorRange()
+{
+  kuznetsov::Vector<int> v;
+  for (int i = 1; i <= 5; ++i) v.pushBack(i);
+
+  auto start = v.cbegin() + 1;
+  auto end = v.cbegin() + 3;
+  auto ret = v.erase(start, end);
+
+  bool res = v.getSize() == 3;
+  res = res && (v.at(0) == 1);
+  res = res && (v.at(1) == 4);
+  res = res && (v.at(2) == 5);
+  res = res && (*ret == 4);
+  return res;
+}
+
+bool even(int val)
+{
+  return val % 2 == 0;
+}
+
+bool testErasePredicate()
+{
+  kuznetsov::Vector<int> v;
+  for (int i = 1; i <= 5; ++i) {
+    v.pushBack(i);
+  }
+
+  auto ret = v.erase(v.cbegin(), v.cend(), even);
+
+  bool res = v.getSize() == 3;
+  res = res && (v.at(0) == 1);
+  res = res && (v.at(1) == 3);
+  res = res && (v.at(2) == 5);
+  res = res && (ret == v.cbegin());
+  return res;
+}
+
+bool testClear()
+{
+  kuznetsov::Vector<int> v;
+  v.pushBack(1);
+  v.pushBack(2);
+  v.clear();
+  return v.isEmpty();
+}
+
 int main()
 {
   using test_t = std::pair< const char *, bool(*)() >;
   test_t tests[] = {
     {"Empty vector", testEmptyVector},
     {"Get Capacity", testGetCapacity},
-    {"Push Into Vector", testPushIntoVector},
+    {"PushBack LValue", testPushBackLValue},
+    {"PushBack RValue", testPushBackRValue},
     {"Pop From Vector", testPopFromVector},
     {"Get Size", testGetSize},
     {"Element Access", testElementAccess},
@@ -317,11 +426,17 @@ int main()
     {"Copy Assignment", testCopyAssignment},
     {"Move Assignment", testMoveAssignment},
     {"Insert", testInsert},
+    {"Move insert", testMoveInsert},
+    {"Move insert with iterator", testMoveInsertWithIterator},
     {"Insert with iterator", testInsertWithIterator},
     {"Insert by range", testInsertByRange},
     {"Insert by range with iterator", testInsertByRangeWithIterator},
     {"Erase", testErase},
     {"Erase by range", testEraseByRange},
+    {"Erase Iterator", testEraseIterator},
+    {"Erase Iterator Range", testEraseIteratorRange},
+    {"Erase Predicate", testErasePredicate},
+    {"Clear", testClear},
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
