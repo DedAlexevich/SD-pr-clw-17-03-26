@@ -256,7 +256,7 @@ void kuznetsov::Vector< T >::generalInsert(size_t pos, U&& v)
     for (; i < pos; ++i) {
       newData[i] = data_[i];
     }
-    newData[pos] = std::forward<U>(v);
+    newData[pos] = std::forward< U >(v);
     for (; i < size_; ++i) {
       newData[i + 1] = data_[i];
     }
@@ -446,33 +446,33 @@ void kuznetsov::Vector< T >::insert(CIter< T > pos, CIter< T > start, CIter< T >
 }
 
 template< class T >
-kuznetsov::CIter<T> kuznetsov::Vector<T>::cbegin()
+kuznetsov::CIter< T > kuznetsov::Vector< T >::cbegin()
 {
   return CIter< T >(data_);
 }
 
 template< class T >
-kuznetsov::CIter<T> kuznetsov::Vector<T>::cend()
+kuznetsov::CIter< T > kuznetsov::Vector< T >::cend()
 {
   return CIter< T >(data_ + size_);
 }
 
 template< class T >
-kuznetsov::Iter<T> kuznetsov::Vector<T>::begin()
+kuznetsov::Iter< T > kuznetsov::Vector< T >::begin()
 {
   return Iter< T >(data_);
 }
 
 template< class T >
-kuznetsov::Iter<T> kuznetsov::Vector<T>::end()
+kuznetsov::Iter< T > kuznetsov::Vector< T >::end()
 {
   return Iter< T >(data_ + size_);
 }
 
 template< class T >
-kuznetsov::CIter<T> kuznetsov::Vector<T>::erase(CIter<T> pos)
+kuznetsov::CIter< T > kuznetsov::Vector< T >::erase(CIter< T > pos)
 {
-  if (pos < CIter<T>(data_) || pos >= CIter<T>(data_ + size_)) {
+  if (pos < CIter< T >(data_) || pos >= CIter< T >(data_ + size_)) {
     throw std::out_of_range("position out of range in erase");
   }
   size_t i = pos - cbegin();
@@ -481,9 +481,9 @@ kuznetsov::CIter<T> kuznetsov::Vector<T>::erase(CIter<T> pos)
 }
 
 template< class T >
-kuznetsov::CIter<T> kuznetsov::Vector<T>::erase(CIter<T> start, CIter<T> end)
+kuznetsov::CIter< T > kuznetsov::Vector< T >::erase(CIter< T > start, CIter< T > end)
 {
-  if (start < CIter<T>(data_) || end > CIter<T>(data_ + size_) || start > end) {
+  if (start < CIter< T >(data_) || end > CIter< T >(data_ + size_) || start > end) {
     throw std::out_of_range("range out of range in erase");
   }
   size_t count = end - start;
@@ -494,15 +494,15 @@ kuznetsov::CIter<T> kuznetsov::Vector<T>::erase(CIter<T> start, CIter<T> end)
 
 template< class T >
 template< class C >
-kuznetsov::CIter<T> kuznetsov::Vector<T>::erase(CIter<T> start, CIter<T> end, C c)
+kuznetsov::CIter< T > kuznetsov::Vector< T >::erase(CIter< T > start, CIter< T > end, C c)
 {
-  if (start < CIter<T>(data_) || end > CIter<T>(data_ + size_) || start > end) {
+  if (start < CIter< T >(data_) || end > CIter< T >(data_ + size_) || start > end) {
     throw std::out_of_range("out of range in erase with predicate");
   }
-  size_t startIndex = start - CIter<T>(data_);
-  size_t endIndex = end - CIter<T>(data_);
+  size_t startIndex = start - CIter< T >(data_);
+  size_t endIndex = end - CIter< T >(data_);
   size_t count = endIndex - startIndex;
-  Vector<T> temp = Vector<T>(size_);
+  Vector< T > temp = Vector< T >(size_);
 
   for (size_t i = 0; i < startIndex; ++i) {
     temp.pushBack(data_[i]);
@@ -521,13 +521,13 @@ kuznetsov::CIter<T> kuznetsov::Vector<T>::erase(CIter<T> start, CIter<T> end, C 
 }
 
 template< class T >
-void kuznetsov::Vector<T>::pushBack(const T& v)
+void kuznetsov::Vector< T >::pushBack(const T& v)
 {
   generalPushBack(v);
 }
 
 template< class T >
-void kuznetsov::Vector<T>::pushBack(T&& v)
+void kuznetsov::Vector< T >::pushBack(T&& v)
 {
   generalPushBack(std::move(v));
 }
