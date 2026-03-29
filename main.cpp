@@ -241,6 +241,63 @@ bool testEraseByRange()
   return res;
 }
 
+bool testInsertWithIterator()
+{
+  auto vect = kuznetsov::Vector< int >();
+  vect.pushBack(1);
+  vect.pushBack(2);
+  vect.pushBack(3);
+  vect.pushBack(4);
+  vect.pushBack(5);
+  auto it = vect.cbegin() + 1;
+  vect.insert(it, 8);
+  it = vect.cbegin() + 3;
+  vect.insert(it, 7);
+  it = vect.cbegin() + 5;
+  vect.insert(it, 12);
+  it = vect.cbegin();
+  vect.insert(it, 23);
+  it = vect.cend();
+  vect.insert(it, 8);
+  int control[] = {23, 1, 8, 2, 7, 3, 12, 4, 5, 8};
+  bool res = vect.getSize() == 10;
+  for (size_t i = 0; res && i < vect.getSize(); i++) {
+    res = res && (vect[i] == control[i]);
+  }
+  return res;
+}
+
+bool testInsertByRangeWithIterator()
+{
+  kuznetsov::Vector< int > vect;
+  vect.pushBack(1);
+  vect.pushBack(2);
+  vect.pushBack(3);
+  vect.pushBack(4);
+  vect.pushBack(5);
+
+  kuznetsov::Vector< int > vect2;
+  vect2.pushBack(6);
+  vect2.pushBack(7);
+  vect2.pushBack(8);
+  vect2.pushBack(9);
+  vect2.pushBack(10);
+  auto start = vect.cbegin() + 1;
+  auto end = vect.cbegin() + 4;
+  vect2.insert(vect2.cbegin() + 2, start, end);
+  int control[] = {6, 7, 2, 3, 4, 8, 9, 10};
+  bool res = vect2.getSize() == 8;
+  for (size_t i = 0; res && i < vect.getSize(); i++) {
+    res = res && (vect2[i] == control[i]);
+  }
+  try {
+    vect2.insert(vect2.cbegin() + 100, vect.cbegin(), vect.cend());
+    res = false;
+  } catch (const std::out_of_range& e) {}
+
+  return res;
+}
+
 int main()
 {
   using test_t = std::pair< const char *, bool(*)() >;
@@ -260,7 +317,9 @@ int main()
     {"Copy Assignment", testCopyAssignment},
     {"Move Assignment", testMoveAssignment},
     {"Insert", testInsert},
+    {"Insert with iterator", testInsertWithIterator},
     {"Insert by range", testInsertByRange},
+    {"Insert by range with iterator", testInsertByRangeWithIterator},
     {"Erase", testErase},
     {"Erase by range", testEraseByRange},
   };
