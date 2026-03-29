@@ -25,21 +25,25 @@ namespace kuznetsov {
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
 
-    void pushBack(const T& v);
+    template< class U >
+    void pushBack(U&& v);
     void popBack();
 
     void insert(size_t pos, const T& v);
+    void insert(size_t pos, T&& v);
     void insert(size_t pos, const Vector< T >& v, size_t start, size_t end);
 
     void insert(CIter< T > it, const T& v);
     void insert(CIter< T > it, T&& v);
-    void insert(CIter< T > place, CIter< T > start, CIter< T > end);
+    void insert(CIter< T > pos, CIter< T > start, CIter< T > end);
 
     void erase(size_t pos);
     void erase(size_t start, size_t count);
 
     CIter< T > erase(CIter< T > pos);
     CIter< T > erase(CIter< T > start, CIter< T > end);
+    CIter< T > erase(CIter< T > start, size_t count);
+
     void clear();
 
     CIter< T > cbegin();
@@ -51,7 +55,7 @@ namespace kuznetsov {
     T& at(size_t pos);
     const T& at(size_t pos) const;
   private:
-    template<typename U>
+    template< class U>
     void generalInsert(size_t pos, U&& value);
     explicit Vector(size_t c);
     T* data_;
@@ -102,7 +106,8 @@ void kuznetsov::Vector< T >::popBack()
 }
 
 template< class T >
-void kuznetsov::Vector< T >::pushBack(const T& v)
+template< class U >
+void kuznetsov::Vector< T >::pushBack(U&& v)
 {
   if (size_ + 1 < cap_) {
     data_[size_] = v;
@@ -115,7 +120,7 @@ void kuznetsov::Vector< T >::pushBack(const T& v)
     for (size_t i = 0; i < size_; ++i) {
       newData[i] = data_[i];
     }
-    newData[size_] = v;
+    newData[size_] = std::forward< U >(v);
     size_++;
   } catch (...) {
     delete[] newData;
@@ -230,7 +235,7 @@ kuznetsov::Vector< T >& kuznetsov::Vector< T >::operator=(Vector&& o) noexcept
 }
 
 template< class T >
-template<typename U>
+template< class U>
 void kuznetsov::Vector< T >::generalInsert(size_t pos, U&& v)
 {
   if (pos > size_) {
@@ -311,6 +316,10 @@ void kuznetsov::Vector< T >::erase(size_t pos)
   if (pos >= size_) {
     throw std::out_of_range("pos out of range in erase");
   }
+  if (pos == size_ - 1) {
+    popBack();
+    return;
+  }
   T* copy = new T[size_ - 1];
   try {
     size_t i = 0;
@@ -335,6 +344,11 @@ void kuznetsov::Vector< T >::erase(size_t start, size_t count)
   if (start >= size_) {
     throw std::out_of_range("start out of range in erase");
   }
+  if (start == size_ - 1) {
+    popBack();
+    return;
+  }
+
   if (start + count >= size_) {
     count = size_ - start;
   }
@@ -363,6 +377,13 @@ void kuznetsov::Vector< T >::insert(size_t pos, const T& v)
 }
 
 template< class T >
+void kuznetsov::Vector< T >::insert(size_t pos, T&& v)
+{
+  generalInsert(pos, std::move(v));
+}
+
+
+template< class T >
 void kuznetsov::Vector< T >::insert(CIter< T > it, const T& v)
 {
   if (it < CIter< T >(data_) || it > CIter< T >(data_ + size_)) {
@@ -388,7 +409,7 @@ void kuznetsov::Vector< T >::insert(CIter< T > pos, CIter< T > start, CIter< T >
   if (pos < CIter< T >(data_) || pos > CIter< T >(data_ + size_)) {
     throw std::out_of_range("iterator position out of range");
   }
-  
+
   size_t index = pos - CIter< T >(data_);
   size_t count = end - start;
   if (count == 0) return;
@@ -442,6 +463,7 @@ kuznetsov::Iter<T> kuznetsov::Vector<T>::end()
 {
   return Iter< T >(data_ + size_);
 }
+
 
 // HOMEWORK
 // Several insert erase with iterators (3 per method + tests)
