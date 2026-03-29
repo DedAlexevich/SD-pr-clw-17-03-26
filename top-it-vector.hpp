@@ -169,6 +169,7 @@ kuznetsov::Vector< T >::Vector(const Vector& other): Vector(other.size_)
   for (size_t i = 0; i < other.size_; ++i) {
     data_[i] = other.data_[i];
   }
+  size_ = other.size_;
 }
 
 template< class T >
@@ -184,6 +185,7 @@ kuznetsov::Vector< T >::Vector(size_t size, const T& init): Vector(size)
   for (size_t i = 0; i < size; ++i) {
     data_[i] = init;
   }
+  size_ = size;
 }
 
 template< class T >
