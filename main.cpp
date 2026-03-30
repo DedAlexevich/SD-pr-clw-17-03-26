@@ -7,6 +7,16 @@ bool testEmptyVector()
   return v.isEmpty();
 }
 
+bool testInititalazeList()
+{
+  kuznetsov::Vector< int > v = {1, 2, 3, 4, 5, 6};
+  bool res = v.getSize() == 6;
+  for (size_t i = 1; i <= 6; i++) {
+    res = res && v.at(i-1) == i;
+  }
+  return res;
+}
+
 bool testGetSize()
 {
   kuznetsov::Vector< int > v;
@@ -153,12 +163,7 @@ bool testMoveAssignment()
 
 bool testInsert()
 {
-  auto vect = kuznetsov::Vector< int >();
-  vect.pushBack(1);
-  vect.pushBack(2);
-  vect.pushBack(3);
-  vect.pushBack(4);
-  vect.pushBack(5);
+  kuznetsov::Vector< int > vect {1, 2, 3, 4, 5};
   int a[] {8, 7, 12, 23};
   vect.insert(1, a[0]);
   vect.insert(3, a[1]);
@@ -411,6 +416,8 @@ int main()
   using test_t = std::pair< const char *, bool(*)() >;
   test_t tests[] = {
     {"Empty vector", testEmptyVector},
+    {"Non empty vector with "
+     "initializer list", testInititalazeList},
     {"Get Capacity", testGetCapacity},
     {"PushBack LValue", testPushBackLValue},
     {"PushBack RValue", testPushBackRValue},
@@ -438,6 +445,7 @@ int main()
     {"Erase Predicate", testErasePredicate},
     {"Clear", testClear},
   };
+
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
   size_t succesed = 0;
@@ -450,6 +458,7 @@ int main()
     std::cout << tests[i].first << ": " << res << "\n";
     pass = pass && res;
   }
+
   std::cout << "Total: " << pass << '\n';
   std::cout << "Passed: " << succesed << '\n';
   std::cout << "Failed: " << failed << '\n';
