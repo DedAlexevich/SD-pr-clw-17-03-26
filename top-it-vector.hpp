@@ -10,7 +10,7 @@ namespace kuznetsov {
     Vector();
     ~Vector();
 
-    Vector(std::initializer_list< T > il);
+    explicit Vector(std::initializer_list< T > il);
     Vector(const Vector&);
     Vector(Vector&&) noexcept;
 
