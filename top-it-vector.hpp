@@ -10,6 +10,7 @@ namespace kuznetsov {
     Vector();
     ~Vector();
 
+    Vector(std::initializer_list< T > il);
     Vector(const Vector&);
     Vector(Vector&&) noexcept;
 
@@ -47,11 +48,11 @@ namespace kuznetsov {
 
     void clear();
 
-    CIter< T > cbegin();
-    CIter< T > cend();
+    CIter< T > cbegin() noexcept;
+    CIter< T > cend() noexcept;
 
-    Iter< T > begin();
-    Iter< T > end();
+    Iter< T > begin() noexcept;
+    Iter< T > end() noexcept;
 
     T& at(size_t pos);
     const T& at(size_t pos) const;
@@ -414,7 +415,6 @@ void kuznetsov::Vector< T >::insert(CIter< T > pos, CIter< T > start, CIter< T >
   if (pos < CIter< T >(data_) || pos > CIter< T >(data_ + size_)) {
     throw std::out_of_range("iterator position out of range");
   }
-
   size_t index = pos - CIter< T >(data_);
   size_t count = end - start;
   if (count == 0) return;
@@ -446,25 +446,25 @@ void kuznetsov::Vector< T >::insert(CIter< T > pos, CIter< T > start, CIter< T >
 }
 
 template< class T >
-kuznetsov::CIter< T > kuznetsov::Vector< T >::cbegin()
+kuznetsov::CIter< T > kuznetsov::Vector< T >::cbegin() noexcept
 {
   return CIter< T >(data_);
 }
 
 template< class T >
-kuznetsov::CIter< T > kuznetsov::Vector< T >::cend()
+kuznetsov::CIter< T > kuznetsov::Vector< T >::cend() noexcept
 {
   return CIter< T >(data_ + size_);
 }
 
 template< class T >
-kuznetsov::Iter< T > kuznetsov::Vector< T >::begin()
+kuznetsov::Iter< T > kuznetsov::Vector< T >::begin() noexcept
 {
   return Iter< T >(data_);
 }
 
 template< class T >
-kuznetsov::Iter< T > kuznetsov::Vector< T >::end()
+kuznetsov::Iter< T > kuznetsov::Vector< T >::end() noexcept
 {
   return Iter< T >(data_ + size_);
 }
@@ -532,9 +532,17 @@ void kuznetsov::Vector< T >::pushBack(T&& v)
   generalPushBack(std::move(v));
 }
 
+template< class T >
+kuznetsov::Vector<T>::Vector(std::initializer_list<T> il):
+  Vector(il.size())
+{
+  size_t i = 0;
+  for (auto it = il.begin(); it != il.end(); it++) {
+    data_[i++] = *it;
+  }
+  size_ = il.size();
+}
 
-// HOMEWORK
-// Several insert erase with iterators (3 per method + tests)
 
 #endif
 
