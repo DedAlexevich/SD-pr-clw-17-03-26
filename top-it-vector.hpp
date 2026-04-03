@@ -9,15 +9,13 @@ namespace kuznetsov {
   struct Vector {
     Vector();
     ~Vector();
-
     explicit Vector(std::initializer_list< T > il);
     Vector(const Vector&);
     Vector(Vector&&) noexcept;
+    Vector(size_t size, const T& init);
 
     Vector& operator=(const Vector&);
     Vector& operator=(Vector&&) noexcept;
-    Vector(size_t size, const T& init);
-
     T& operator[](size_t i) noexcept;
     const T& operator[](size_t i) const noexcept;
 
@@ -26,8 +24,20 @@ namespace kuznetsov {
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
 
+    //Классная работа 30.03.2026
+    void reserve(size_t required); // хватает памяти на k элементов
+    void shrinkToFit(); // образать capacity до size
+    void pushBackRange(CIter< T > start, size_t c);
+    void pushBackCount(size_t k, const T& val);
+    void unsafePushBack(const T& val);
+
+    // Домашка
+    // избавиться от требования, чтобы Т конструировался по умолчанию
+    // placement new
+
     void pushBack(const T& v);
     void pushBack(T&& v);
+
     void popBack();
 
     void insert(size_t pos, const T& v);
@@ -48,11 +58,14 @@ namespace kuznetsov {
 
     void clear();
 
-    CIter< T > cbegin() noexcept;
-    CIter< T > cend() noexcept;
+    CIter< T > cbegin() const noexcept;
+    CIter< T > cend() const noexcept;
 
     Iter< T > begin() noexcept;
     Iter< T > end() noexcept;
+
+    CIter< T > begin() const noexcept;
+    CIter< T > end() const noexcept;
 
     T& at(size_t pos);
     const T& at(size_t pos) const;
@@ -84,6 +97,96 @@ kuznetsov::Vector< T >::~Vector()
 }
 
 template< class T >
+kuznetsov::Vector<T>::Vector(std::initializer_list<T> il):
+  Vector(il.size())
+{
+  size_t i = 0;
+  for (auto it = il.begin(); it != il.end(); it++) {
+    data_[i++] = *it;
+  }
+  size_ = il.size();
+}
+
+template< class T >
+kuznetsov::Vector< T >::Vector(const Vector& other): Vector(other.size_)
+{
+  for (size_t i = 0; i < other.size_; ++i) {
+    data_[i] = other.data_[i];
+  }
+  size_ = other.size_;
+}
+
+template< class T >
+kuznetsov::Vector< T >::Vector(Vector&& o) noexcept :
+  data_(o.data_),
+  size_(o.size_),
+  cap_(o.cap_)
+{
+  o.data_ = nullptr;
+  o.size_ = 0;
+  o.cap_ = 0;
+}
+
+template< class T >
+kuznetsov::Vector< T >::Vector(size_t size, const T& init): Vector(size)
+{
+  for (size_t i = 0; i < size; ++i) {
+    data_[i] = init;
+  }
+  size_ = size;
+}
+
+template< class T >
+kuznetsov::Vector< T >::Vector(size_t c):
+  data_(c ? new T[c] : nullptr),
+  size_(0),
+  cap_(c)
+{}
+
+template< class T >
+kuznetsov::Vector< T >& kuznetsov::Vector< T >::operator=(const Vector& rhs)
+{
+  if (this == std::addressof(rhs)) {
+    return *this;
+  }
+  Vector< T > cpy(rhs);
+  swap(cpy);
+  return *this;
+}
+
+template< class T >
+kuznetsov::Vector< T >& kuznetsov::Vector< T >::operator=(Vector&& o) noexcept
+{
+  if (this == std::addressof(o)) {
+    return *this;
+  }
+  Vector< T > cpy(std::move(o));
+  swap(cpy);
+  return *this;
+}
+
+template< class T >
+T& kuznetsov::Vector< T >::operator[](size_t i) noexcept
+{
+  const Vector* cthis = this;
+  return const_cast< T& >((*cthis)[i]);
+}
+
+template< class T >
+const T& kuznetsov::Vector< T >::operator[](size_t i) const noexcept
+{
+  return data_[i];
+}
+
+template< class T >
+void kuznetsov::Vector< T >::swap(Vector< T >& rhs) noexcept
+{
+  std::swap(data_, rhs.data_);
+  std::swap(size_, rhs.size_);
+  std::swap(cap_, rhs.cap_);
+}
+
+template< class T >
 bool kuznetsov::Vector< T >::isEmpty() const noexcept
 {
   return !size_ or !data_;
@@ -99,14 +202,6 @@ template< class T >
 size_t kuznetsov::Vector< T >::getCapacity() const noexcept
 {
   return cap_;
-}
-
-template< class T >
-void kuznetsov::Vector< T >::popBack()
-{
-  if (size_ > 0) {
-    size_--;
-  }
 }
 
 template< class T >
@@ -136,108 +231,23 @@ void kuznetsov::Vector< T >::generalPushBack(U&& v)
 }
 
 template< class T >
-T& kuznetsov::Vector< T >::at(size_t pos)
+void kuznetsov::Vector< T >::pushBack(const T& v)
 {
-  const Vector< T >* cthis = this ;
-  return  const_cast< T& >(cthis->at(pos));
+  generalPushBack(v);
 }
 
 template< class T >
-const T& kuznetsov::Vector< T >::at(size_t pos) const
+void kuznetsov::Vector< T >::pushBack(T&& v)
 {
-  if (pos >= size_) {
-    throw std::out_of_range("Out of size array");
+  generalPushBack(std::move(v));
+}
+
+template< class T >
+void kuznetsov::Vector< T >::popBack()
+{
+  if (size_ > 0) {
+    size_--;
   }
-  return (*this)[pos];
-}
-
-template< class T >
-T& kuznetsov::Vector< T >::operator[](size_t i) noexcept
-{
-  const Vector* cthis = this;
-  return const_cast< T& >((*cthis)[i]);
-}
-
-template< class T >
-const T& kuznetsov::Vector< T >::operator[](size_t i) const noexcept
-{
-  return data_[i];
-}
-
-template< class T >
-kuznetsov::Vector< T >::Vector(const Vector& other): Vector(other.size_)
-{
-  for (size_t i = 0; i < other.size_; ++i) {
-    data_[i] = other.data_[i];
-  }
-  size_ = other.size_;
-}
-
-template< class T >
-kuznetsov::Vector< T >::Vector(size_t c):
-  data_(c ? new T[c] : nullptr),
-  size_(0),
-  cap_(c)
-{}
-
-template< class T >
-kuznetsov::Vector< T >::Vector(size_t size, const T& init): Vector(size)
-{
-  for (size_t i = 0; i < size; ++i) {
-    data_[i] = init;
-  }
-  size_ = size;
-}
-
-template< class T >
-bool kuznetsov::operator==(const Vector< T >& lhs, const Vector< T >& rhs)
-{
-  bool res = lhs.getSize() == rhs.getSize();
-  for (size_t i = 0; i < lhs.getSize(); ++i) {
-    res = res && (lhs[i] == rhs[i]);
-  }
-  return res;
-}
-
-template< class T >
-void kuznetsov::Vector< T >::swap(Vector< T >& rhs) noexcept
-{
-  std::swap(data_, rhs.data_);
-  std::swap(size_, rhs.size_);
-  std::swap(cap_, rhs.cap_);
-}
-
-template< class T >
-kuznetsov::Vector< T >& kuznetsov::Vector< T >::operator=(const Vector& rhs)
-{
-  if (this == std::addressof(rhs)) {
-    return *this;
-  }
-  Vector< T > cpy(rhs);
-  swap(cpy);
-  return *this;
-}
-
-template< class T >
-kuznetsov::Vector< T >::Vector(Vector&& o) noexcept :
-  data_(o.data_),
-  size_(o.size_),
-  cap_(o.cap_)
-{
-  o.data_ = nullptr;
-  o.size_ = 0;
-  o.cap_ = 0;
-}
-
-template< class T >
-kuznetsov::Vector< T >& kuznetsov::Vector< T >::operator=(Vector&& o) noexcept
-{
-  if (this == std::addressof(o)) {
-    return *this;
-  }
-  Vector< T > cpy(std::move(o));
-  swap(cpy);
-  return *this;
 }
 
 template< class T >
@@ -269,6 +279,74 @@ void kuznetsov::Vector< T >::generalInsert(size_t pos, U&& v)
   data_ = newData;
   size_++;
   cap_ = newCap;
+}
+
+template< class T >
+void kuznetsov::Vector< T >::insert(size_t pos, const T& v)
+{
+  generalInsert(pos, v);
+}
+
+template< class T >
+void kuznetsov::Vector< T >::insert(size_t pos, T&& v)
+{
+  generalInsert(pos, std::move(v));
+}
+
+template< class T >
+void kuznetsov::Vector< T >::insert(CIter< T > pos, CIter< T > start, CIter< T > end)
+{
+  if (pos < CIter< T >(data_) || pos > CIter< T >(data_ + size_)) {
+    throw std::out_of_range("iterator position out of range");
+  }
+  size_t index = pos - CIter< T >(data_);
+  size_t count = end - start;
+  if (count == 0) return;
+  size_t newCap = cap_;
+  if (size_ + count > cap_) {
+    newCap = cap_ * 1.5 + count;
+  }
+  T* newData = new T[newCap];
+  try {
+    size_t i = 0;
+    for (; i < index; ++i) {
+      newData[i] = data_[i];
+    }
+    for (auto it = start; it != end; ++it) {
+      newData[i++] = *it;
+    }
+
+    for (size_t j = index; j < size_; ++j) {
+      newData[i++] = data_[j];
+    }
+  } catch (...) {
+    delete[] newData;
+    throw;
+  }
+  delete[] data_;
+  data_ = newData;
+  size_ += count;
+  cap_ = newCap;
+}
+
+template< class T >
+void kuznetsov::Vector< T >::insert(CIter< T > it, const T& v)
+{
+  if (it < CIter< T >(data_) || it > CIter< T >(data_ + size_)) {
+    throw std::out_of_range("position out of range");
+  }
+  size_t pos = it - CIter< T >(data_);
+  generalInsert(pos, v);
+}
+
+template< class T >
+void kuznetsov::Vector< T >::insert(CIter< T > it, T&& v)
+{
+  if (it < CIter< T >(data_) || it > CIter< T >(data_ + size_)) {
+    throw std::out_of_range("position out of range");
+  }
+  size_t pos = it - CIter< T >(data_);
+  generalInsert(pos, std::move(v));
 }
 
 template< class T >
@@ -306,14 +384,6 @@ void kuznetsov::Vector< T >::insert(size_t pos, const Vector< T >& v, size_t sta
   data_ = newData;
   size_ += count;
   cap_ = newCap;
-}
-
-template< class T >
-void kuznetsov::Vector< T >::clear()
-{
-  delete[] data_;
-  data_ = nullptr;
-  size_ = 0;
 }
 
 template< class T >
@@ -377,99 +447,6 @@ void kuznetsov::Vector< T >::erase(size_t start, size_t count)
 }
 
 template< class T >
-void kuznetsov::Vector< T >::insert(size_t pos, const T& v)
-{
-  generalInsert(pos, v);
-}
-
-template< class T >
-void kuznetsov::Vector< T >::insert(size_t pos, T&& v)
-{
-  generalInsert(pos, std::move(v));
-}
-
-
-template< class T >
-void kuznetsov::Vector< T >::insert(CIter< T > it, const T& v)
-{
-  if (it < CIter< T >(data_) || it > CIter< T >(data_ + size_)) {
-    throw std::out_of_range("position out of range");
-  }
-  size_t pos = it - CIter< T >(data_);
-  generalInsert(pos, v);
-}
-
-template< class T >
-void kuznetsov::Vector< T >::insert(CIter< T > it, T&& v)
-{
-  if (it < CIter< T >(data_) || it > CIter< T >(data_ + size_)) {
-    throw std::out_of_range("position out of range");
-  }
-  size_t pos = it - CIter< T >(data_);
-  generalInsert(pos, std::move(v));
-}
-
-template< class T >
-void kuznetsov::Vector< T >::insert(CIter< T > pos, CIter< T > start, CIter< T > end)
-{
-  if (pos < CIter< T >(data_) || pos > CIter< T >(data_ + size_)) {
-    throw std::out_of_range("iterator position out of range");
-  }
-  size_t index = pos - CIter< T >(data_);
-  size_t count = end - start;
-  if (count == 0) return;
-  size_t newCap = cap_;
-  if (size_ + count > cap_) {
-    newCap = cap_ * 1.5 + count;
-  }
-  T* newData = new T[newCap];
-  try {
-    size_t i = 0;
-    for (; i < index; ++i) {
-      newData[i] = data_[i];
-    }
-    for (auto it = start; it != end; ++it) {
-      newData[i++] = *it;
-    }
-        
-    for (size_t j = index; j < size_; ++j) {
-      newData[i++] = data_[j];
-    }
-  } catch (...) {
-    delete[] newData;
-    throw;
-  }
-  delete[] data_;
-  data_ = newData;
-  size_ += count;
-  cap_ = newCap;
-}
-
-template< class T >
-kuznetsov::CIter< T > kuznetsov::Vector< T >::cbegin() noexcept
-{
-  return CIter< T >(data_);
-}
-
-template< class T >
-kuznetsov::CIter< T > kuznetsov::Vector< T >::cend() noexcept
-{
-  return CIter< T >(data_ + size_);
-}
-
-template< class T >
-kuznetsov::Iter< T > kuznetsov::Vector< T >::begin() noexcept
-{
-  return Iter< T >(data_);
-}
-
-template< class T >
-kuznetsov::Iter< T > kuznetsov::Vector< T >::end() noexcept
-{
-  return Iter< T >(data_ + size_);
-}
-
-template< class T >
 kuznetsov::CIter< T > kuznetsov::Vector< T >::erase(CIter< T > pos)
 {
   if (pos < CIter< T >(data_) || pos >= CIter< T >(data_ + size_)) {
@@ -521,28 +498,99 @@ kuznetsov::CIter< T > kuznetsov::Vector< T >::erase(CIter< T > start, CIter< T >
 }
 
 template< class T >
-void kuznetsov::Vector< T >::pushBack(const T& v)
+void kuznetsov::Vector< T >::clear()
 {
-  generalPushBack(v);
+  delete[] data_;
+  data_ = nullptr;
+  size_ = 0;
 }
 
 template< class T >
-void kuznetsov::Vector< T >::pushBack(T&& v)
+kuznetsov::CIter< T > kuznetsov::Vector< T >::cbegin() const noexcept
 {
-  generalPushBack(std::move(v));
+  return CIter< T >(data_);
 }
 
 template< class T >
-kuznetsov::Vector<T>::Vector(std::initializer_list<T> il):
-  Vector(il.size())
+kuznetsov::CIter< T > kuznetsov::Vector< T >::cend() const noexcept
 {
-  size_t i = 0;
-  for (auto it = il.begin(); it != il.end(); it++) {
-    data_[i++] = *it;
+  return CIter< T >(data_ + size_);
+}
+
+template< class T >
+kuznetsov::Iter< T > kuznetsov::Vector< T >::begin() noexcept
+{
+  return Iter< T >(data_);
+}
+
+template< class T >
+kuznetsov::Iter< T > kuznetsov::Vector< T >::end() noexcept
+{
+  return Iter< T >(data_ + size_);
+}
+
+template< class T >
+kuznetsov::CIter< T > kuznetsov::Vector< T >::begin() const noexcept
+{
+  return CIter< T >(data_);
+}
+
+template< class T >
+kuznetsov::CIter< T > kuznetsov::Vector< T >::end() const noexcept
+{
+  return CIter< T >(data_ + size_);
+}
+
+template< class T >
+T& kuznetsov::Vector< T >::at(size_t pos)
+{
+  const Vector< T >* cthis = this ;
+  return  const_cast< T& >(cthis->at(pos));
+}
+
+template< class T >
+const T& kuznetsov::Vector< T >::at(size_t pos) const
+{
+  if (pos >= size_) {
+    throw std::out_of_range("Out of size array");
   }
-  size_ = il.size();
+  return (*this)[pos];
 }
 
+
+template< class T >
+void kuznetsov::Vector< T >::pushBackCount(size_t k, const T& val)
+{
+  if (size_ + k + 1< cap_) {
+
+  }
+  for (size_t i = 0; i < k; ++i) {
+    usafePushBack(val);
+  }
+}
+
+template< class T >
+void kuznetsov::Vector< T >::unsafePushBack(const T& val)
+{
+
+}
+
+template< class T >
+void kuznetsov::Vector<T>::pushBackRange(CIter<T> start, size_t c)
+{
+
+
+}
+
+template< class T >
+bool kuznetsov::operator==(const Vector< T >& lhs, const Vector< T >& rhs)
+{
+  bool res = lhs.getSize() == rhs.getSize();
+  for (size_t i = 0; i < lhs.getSize(); ++i) {
+    res = res && (lhs[i] == rhs[i]);
+  }
+  return res;
+}
 
 #endif
 
