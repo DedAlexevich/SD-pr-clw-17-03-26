@@ -544,7 +544,9 @@ kuznetsov::CIter< T > kuznetsov::Vector< T >::erase(CIter< T > start, CIter< T >
 template< class T >
 void kuznetsov::Vector< T >::clear()
 {
-  delete[] data_;
+  for (size_t i = 0; i < size_; ++i) {
+    (data_ + i)->~T();
+  }
   data_ = nullptr;
   size_ = 0;
 }
