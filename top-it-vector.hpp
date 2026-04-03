@@ -24,17 +24,6 @@ namespace kuznetsov {
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
 
-    //Классная работа 30.03.2026
-    void reserve(size_t required); // хватает памяти на k элементов
-    void shrinkToFit(); // образать capacity до size
-    void pushBackRange(CIter< T > start, size_t c);
-    void pushBackCount(size_t k, const T& val);
-    void unsafePushBack(const T& val);
-
-    // Домашка
-    // избавиться от требования, чтобы Т конструировался по умолчанию
-    // placement new
-
     void pushBack(const T& v);
     void pushBack(T&& v);
 
@@ -69,6 +58,18 @@ namespace kuznetsov {
 
     T& at(size_t pos);
     const T& at(size_t pos) const;
+
+    //Классная работа 30.03.2026
+    void reserve(size_t required); // хватает памяти на k элементов
+    void shrinkToFit(); // образать capacity до size
+    void pushBackRange(CIter< T > start, size_t c);
+    void pushBackCount(size_t k, const T& val);
+    void unsafePushBack(const T& val);
+
+    // Домашка
+    // избавиться от требования, чтобы Т конструировался по умолчанию
+    // placement new
+
   private:
     explicit Vector(size_t c);
     template< class U>
@@ -78,6 +79,7 @@ namespace kuznetsov {
     T* data_;
     size_t size_, cap_;
   };
+
   template< class T >
   bool operator==(const Vector< T >& lhs, const Vector< T >& rhs);
 }
@@ -93,27 +95,21 @@ kuznetsov::Vector< T >::Vector():
 template< class T >
 kuznetsov::Vector< T >::~Vector()
 {
-  delete[] data_;
+  for (size_t i = 0; i < size_; ++i) {
+    (data_ + i)->~T();
+  }
+   ::operator delete[] (data_);
 }
 
 template< class T >
-kuznetsov::Vector<T>::Vector(std::initializer_list<T> il):
-  Vector(il.size())
+kuznetsov::Vector< T >::Vector(const Vector& other):
+  Vector(other.size_)
 {
   size_t i = 0;
-  for (auto it = il.begin(); it != il.end(); it++) {
-    data_[i++] = *it;
+  for (; i < other.size_; ++i) {
+    new (data_ + i) T(other.data_[i]);
+    ++size_;
   }
-  size_ = il.size();
-}
-
-template< class T >
-kuznetsov::Vector< T >::Vector(const Vector& other): Vector(other.size_)
-{
-  for (size_t i = 0; i < other.size_; ++i) {
-    data_[i] = other.data_[i];
-  }
-  size_ = other.size_;
 }
 
 template< class T >
@@ -128,20 +124,31 @@ kuznetsov::Vector< T >::Vector(Vector&& o) noexcept :
 }
 
 template< class T >
-kuznetsov::Vector< T >::Vector(size_t size, const T& init): Vector(size)
+kuznetsov::Vector< T >::Vector(size_t size, const T& init):
+  Vector(size)
 {
   for (size_t i = 0; i < size; ++i) {
-    data_[i] = init;
+    new (data_ + i) T(init);
+    ++size_;
   }
-  size_ = size;
 }
 
 template< class T >
 kuznetsov::Vector< T >::Vector(size_t c):
-  data_(c ? new T[c] : nullptr),
+  data_(c ? ::operator new[](sizeof(T) * c) : nullptr),
   size_(0),
   cap_(c)
 {}
+
+template< class T >
+kuznetsov::Vector<T>::Vector(std::initializer_list< T > il):
+  Vector(il.size())
+{
+  for (auto it = il.begin(); it != il.end(); ++it) {
+    new (data_ + size_)  T(*it);
+    ++size_;
+  }
+}
 
 template< class T >
 kuznetsov::Vector< T >& kuznetsov::Vector< T >::operator=(const Vector& rhs)
