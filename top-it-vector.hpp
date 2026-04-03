@@ -327,24 +327,31 @@ void kuznetsov::Vector< T >::insert(CIter< T > pos, CIter< T > start, CIter< T >
   if (size_ + count > cap_) {
     newCap = cap_ * 1.5 + count;
   }
-  T* newData = new T[newCap];
+  T* newData = static_cast< T* >(::operator new[] (sizeof(T) * newCap));
+  size_t i = 0;
   try {
-    size_t i = 0;
     for (; i < index; ++i) {
-      newData[i] = data_[i];
+      new (newData + i) T(data_[i]);
     }
     for (auto it = start; it != end; ++it) {
-      newData[i++] = *it;
+      new (newData + i) T(*it);
+      ++i;
     }
-
     for (size_t j = index; j < size_; ++j) {
-      newData[i++] = data_[j];
+      new (newData + i) T(data_[j]);
+      ++i;
     }
   } catch (...) {
-    delete[] newData;
+    for (size_t j = 0; j < i; ++j) {
+      (newData + j)->~T();
+    }
+    ::operator delete[] (newData);
     throw;
   }
-  delete[] data_;
+  for (size_t j = 0; j < size_; ++j) {
+    (data_ + j)->~T();
+  }
+  ::operator delete[] (data_);
   data_ = newData;
   size_ += count;
   cap_ = newCap;
