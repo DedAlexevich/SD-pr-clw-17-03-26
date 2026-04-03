@@ -260,6 +260,7 @@ template< class T >
 void kuznetsov::Vector< T >::popBack()
 {
   if (size_ > 0) {
+    (data_ + size_ - 1)->~T();
     size_--;
   }
 }
@@ -275,21 +276,27 @@ void kuznetsov::Vector< T >::generalInsert(size_t pos, U&& v)
   if (size_ + 1 < cap_) {
     newCap = cap_;
   }
-  T* newData = new T[newCap];
+  T* newData = static_cast< T* >(::operator new[](sizeof(T) * newCap));
+  size_t i = 0;
   try {
-    size_t i = 0;
     for (; i < pos; ++i) {
-      newData[i] = data_[i];
+      new (newData + i) T(data_[i]);
     }
-    newData[pos] = std::forward< U >(v);
+    new (newData + pos) T(std::forward< U >(v));
     for (; i < size_; ++i) {
-      newData[i + 1] = data_[i];
+      new (newData + i + 1) T(data_[i]);
     }
   } catch (...) {
-    delete[] newData;
+    for (size_t j = 0; j < i; ++j) {
+      (newData + j)->~T();
+    }
+    ::operator delete[] (newData);
     throw;
   }
-  delete[] data_;
+  for (; i > 0; i--) {
+    (data_ + i - 1)->~T();
+  }
+  ::operator delete[] (data_);
   data_ = newData;
   size_++;
   cap_ = newCap;
