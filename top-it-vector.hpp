@@ -547,7 +547,6 @@ void kuznetsov::Vector< T >::clear()
   for (size_t i = 0; i < size_; ++i) {
     (data_ + i)->~T();
   }
-  data_ = nullptr;
   size_ = 0;
 }
 
