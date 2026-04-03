@@ -430,7 +430,7 @@ void kuznetsov::Vector< T >::erase(size_t pos)
     popBack();
     return;
   }
-  T* copy = static_cast< T* >(sizeof(T) * size_ - 1);
+  T* copy = static_cast< T* >(::operator new[] (sizeof(T) * (size_ - 1)));
   size_t i = 0;
   try {
     for (; i < pos; ++i) {
@@ -463,24 +463,29 @@ void kuznetsov::Vector< T >::erase(size_t start, size_t count)
     popBack();
     return;
   }
-
   if (start + count >= size_) {
     count = size_ - start;
   }
-  T* copy = new T[size_ - count];
+  T* copy = static_cast< T* >(::operator new[] (sizeof(T) * (size_ - count)));
+  size_t i = 0;
   try {
-    size_t i = 0;
     for (; i < start; ++i) {
-      copy[i] = data_[i];
+      new (copy + i) T(data_[i]);
     }
     for (; i < size_ - count; ++i) {
-      copy[i] = data_[i + count];
+      new (copy + i) T(data_[i + count]);
     }
   } catch (...) {
-    delete[] copy;
+    for (; i > 0; i--) {
+      (copy + i - 1)->~T();
+    }
+    ::operator delete[] (copy);
     throw;
   }
-  delete[] data_;
+  for (i = 0; i < size_; ++i) {
+    (data_ + i)->~T();
+  }
+  ::operator delete[] (data_);
   data_ = copy;
   size_ = size_ - count;
 }
