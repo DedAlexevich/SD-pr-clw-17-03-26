@@ -458,6 +458,13 @@ bool testReserve()
   return res;
 }
 
+bool testShrinkToFit()
+{
+  kuznetsov::Vector< int > v {1, 2, 3};
+  v.reserve(10);
+  v.shrinkToFit();
+  return v.getCapacity() == 3;
+}
 
 int main()
 {
@@ -496,6 +503,7 @@ int main()
     {"pushBackRange", testPushBackRange},
     {"unsafePushBack", testUnsafePushBack},
     {"reserve", testReserve},
+    {"shrink to fit", testShrinkToFit},
   };
 
   const size_t count = sizeof(tests) / sizeof(test_t);
