@@ -614,12 +614,12 @@ void kuznetsov::Vector< T >::pushBackCount(size_t k, const T& val)
     size_t i = 0;
     try {
       for (; i < k; ++i) {
-        new (data_ + i) T(val);
+        new (data_ + size_ + i) T(val);
       }
       size_ += k;
     } catch (...) {
       for (; i > 0; --i) {
-        (data_ + i - 1)->~T();
+        (data_ + size_ + i - 1)->~T();
       }
       throw;
     }
@@ -637,7 +637,7 @@ void kuznetsov::Vector< T >::pushBackCount(size_t k, const T& val)
     }
   } catch (...) {
     for (; i > 0; --i) {
-      (copy + i)->~T();
+      (copy + i - 1)->~T();
     }
     ::operator delete[] (copy);
     throw;
@@ -661,8 +661,48 @@ void kuznetsov::Vector< T >::unsafePushBack(const T& val)
 template< class T >
 void kuznetsov::Vector<T>::pushBackRange(CIter<T> start, size_t c)
 {
+  if (size_ + c < cap_) {
+    size_t i = 0;
+    try {
+      for (; i < c; ++i) {
+        new (data_ + size_ + i) T(*start);
+        ++start;
+      }
+      size_ += c;
+    } catch (...) {
+      for (; i > 0; --i) {
+        (data_ + size_ + i - 1)->~T();
+      }
+      throw;
+    }
+    return;
+  }
 
-
+  size_t newCap = cap_ + cap_ / 2 + c;
+  T* copy = static_cast< T* >(::operator new[] (sizeof(T) * newCap));
+  size_t i = 0;
+  try {
+    for (; i < size_; ++i) {
+      new (copy + i) T(data_[i]);
+    }
+    for (; i < size_ + c; ++i) {
+      new (copy + i) T(*start);
+      ++start;
+    }
+  } catch (...) {
+    for (; i > 0; --i) {
+      (copy + i - 1)->~T();
+    }
+    ::operator delete[] (copy);
+    throw;
+  }
+  for (i = 0; i < size_; ++i) {
+    (data_ + i)->~T();
+  }
+  ::operator delete[] (data_);
+  data_ = copy;
+  cap_ = newCap;
+  size_ += c;
 }
 
 template< class T >
