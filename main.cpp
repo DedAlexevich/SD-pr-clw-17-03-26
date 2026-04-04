@@ -448,6 +448,16 @@ bool testUnsafePushBack()
   return res;
 }
 
+bool testReserve()
+{
+  kuznetsov::Vector< int > v;
+  v.reserve(10);
+  bool res = v.getCapacity() == 10;
+  v.reserve(5);
+  res = res && v.getCapacity() == 10;
+  return res;
+}
+
 
 int main()
 {
@@ -485,6 +495,7 @@ int main()
     {"pushBackCount", testPushBackCount},
     {"pushBackRange", testPushBackRange},
     {"unsafePushBack", testUnsafePushBack},
+    {"reserve", testReserve},
   };
 
   const size_t count = sizeof(tests) / sizeof(test_t);
