@@ -386,7 +386,7 @@ void kuznetsov::Vector< T >::insert(size_t pos, const Vector< T >& v, size_t sta
   if (pos > size_) {
     throw std::out_of_range("position out of range in insert");
   }
-  if (end >= v.getSize()) {
+  if (end > v.getSize()) {
     throw std::out_of_range("end of second vector out of range");
   }
   size_t count = (end - start);

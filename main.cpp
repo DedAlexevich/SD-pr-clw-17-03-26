@@ -9,7 +9,7 @@ bool testEmptyVector()
 
 bool testInititalazeList()
 {
-  kuznetsov::Vector< int > v = {1, 2, 3, 4, 5, 6};
+  kuznetsov::Vector< int > v {1, 2, 3, 4, 5, 6};
   bool res = v.getSize() == 6;
   for (size_t i = 1; i <= 6; i++) {
     res = res && v.at(i-1) == i;
@@ -411,6 +411,44 @@ bool testClear()
   return v.isEmpty();
 }
 
+bool testPushBackCount()
+{
+  kuznetsov::Vector< int > v;
+  v.pushBackCount(5, 8);
+  bool res = v.getSize() == 5;
+  for (auto i: v) {
+    res = res && i == 8;
+  }
+  return res;
+}
+
+bool testPushBackRange()
+{
+  kuznetsov::Vector< int > v {1, 2, 3};
+  const kuznetsov::Vector< int > v2 {4, 5, 6, 7};
+  v.pushBackRange(v2.begin(), 3);
+  bool res = v.getSize() == 6;
+  for (size_t i = 1; i <= 6; ++i) {
+    res = res && (v[i-1] == i);
+  }
+  return res;
+}
+
+bool testUnsafePushBack()
+{
+  kuznetsov::Vector< int > v(5, 0);
+  v.clear();
+  v.unsafePushBack(1);
+  v.unsafePushBack(2);
+  v.unsafePushBack(3);
+  bool res = v.getSize() == 3;
+  for (size_t i = 0; i < 3; ++i) {
+    res = res && v[i] == i + 1;
+  }
+  return res;
+}
+
+
 int main()
 {
   using test_t = std::pair< const char *, bool(*)() >;
@@ -444,6 +482,9 @@ int main()
     {"Erase Iterator Range", testEraseIteratorRange},
     {"Erase Predicate", testErasePredicate},
     {"Clear", testClear},
+    {"pushBackCount", testPushBackCount},
+    {"pushBackRange", testPushBackRange},
+    {"unsafePushBack", testUnsafePushBack},
   };
 
   const size_t count = sizeof(tests) / sizeof(test_t);
