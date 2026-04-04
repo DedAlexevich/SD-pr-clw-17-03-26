@@ -98,7 +98,7 @@ kuznetsov::Vector< T >::~Vector()
   for (size_t i = 0; i < size_; ++i) {
     (data_ + i)->~T();
   }
-   ::operator delete[] (data_);
+  ::operator delete[] (data_);
 }
 
 template< class T >
@@ -196,7 +196,7 @@ void kuznetsov::Vector< T >::swap(Vector< T >& rhs) noexcept
 template< class T >
 bool kuznetsov::Vector< T >::isEmpty() const noexcept
 {
-  return !size_ or !data_;
+  return !size_;
 }
 
 template< class T >
@@ -269,9 +269,6 @@ template< class T >
 template< class U>
 void kuznetsov::Vector< T >::generalInsert(size_t pos, U&& v)
 {
-  if (pos > size_) {
-    throw std::out_of_range("position out of range");
-  }
   size_t newCap = cap_ * 1.5 + 1;
   if (size_ + 1 < cap_) {
     newCap = cap_;
@@ -305,12 +302,18 @@ void kuznetsov::Vector< T >::generalInsert(size_t pos, U&& v)
 template< class T >
 void kuznetsov::Vector< T >::insert(size_t pos, const T& v)
 {
+  if (pos > size_) {
+    throw std::out_of_range("position out of range");
+  }
   generalInsert(pos, v);
 }
 
 template< class T >
 void kuznetsov::Vector< T >::insert(size_t pos, T&& v)
 {
+  if (pos > size_) {
+    throw std::out_of_range("position out of range");
+  }
   generalInsert(pos, std::move(v));
 }
 
@@ -441,8 +444,9 @@ void kuznetsov::Vector< T >::erase(size_t pos)
     }
   } catch (...) {
     for (size_t j = 0; j < i; ++j) {
-      (copy + i)->~T();
+      (copy + j)->~T();
     }
+    ::operator delete[] (copy);
     throw;
   }
   for (i = 0; i < size_; ++i) {
@@ -606,12 +610,45 @@ const T& kuznetsov::Vector< T >::at(size_t pos) const
 template< class T >
 void kuznetsov::Vector< T >::pushBackCount(size_t k, const T& val)
 {
-  if (size_ + k + 1< cap_) {
-
+  if (size_ + k < cap_) {
+    size_t i = 0;
+    try {
+      for (; i < k; ++i) {
+        new (data_ + i) T(val);
+      }
+      size_ += k;
+    } catch (...) {
+      for (; i > 0; --i) {
+        (data_ + i - 1)->~T();
+      }
+      throw;
+    }
+    return;
   }
-  for (size_t i = 0; i < k; ++i) {
-    usafePushBack(val);
+  size_t newCap = cap_ + cap_ / 2 + k;
+  T* copy = static_cast< T* >(::operator new[] (sizeof(T) * newCap));
+  size_t i = 0;
+  try {
+    for (; i < size_; ++i) {
+      new (copy + i) T(data_[i]);
+    }
+    for (; i < size_ + k; ++i) {
+      new (copy + i) T(val);
+    }
+  } catch (...) {
+    for (; i > 0; --i) {
+      (copy + i)->~T();
+    }
+    ::operator delete[] (copy);
+    throw;
   }
+  for (i = 0; i < size_; ++i) {
+    (data_ + i)->~T();
+  }
+  ::operator delete[] (data_);
+  data_ = copy;
+  cap_ = newCap;
+  size_ += k;
 }
 
 template< class T >
