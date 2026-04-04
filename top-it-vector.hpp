@@ -732,6 +732,7 @@ void kuznetsov::Vector<T>::reserve(size_t required)
       (copy + i - 1)->~T();
     }
     ::operator delete[] (copy);
+    throw;
   }
   for (i = 0; i < size_; ++i) {
     (data_ + i)->~T();
@@ -744,6 +745,25 @@ void kuznetsov::Vector<T>::reserve(size_t required)
 template < class T >
 void kuznetsov::Vector<T>::shrinkToFit()
 {
+  T* copy = static_cast< T* >(::operator new[] (sizeof(T) * size_));
+  size_t i = 0;
+  try {
+    for (; i < size_; ++i) {
+      new (copy + i) T(data_[i]);
+    }
+  } catch (...) {
+    for (; i > 0; --i) {
+      (copy + i - 1)->~T();
+    }
+    ::operator delete[] (copy);
+    throw;
+  }
+  for (i = 0; i < size_; ++i) {
+    (data_ + i)->~T();
+  }
+  ::operator delete[] (data_);
+  data_ = copy;
+  cap_ = size_;
 }
 
 #endif
