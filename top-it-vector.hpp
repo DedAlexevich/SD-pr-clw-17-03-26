@@ -654,7 +654,8 @@ void kuznetsov::Vector< T >::pushBackCount(size_t k, const T& val)
 template< class T >
 void kuznetsov::Vector< T >::unsafePushBack(const T& val)
 {
-
+  new (data_ + size_) T(val);
+  size_++;
 }
 
 template< class T >
