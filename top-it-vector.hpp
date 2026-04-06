@@ -215,33 +215,10 @@ template< class T >
 template< class U >
 void kuznetsov::Vector< T >::generalPushBack(U&& v)
 {
-  if (size_ + 1 < cap_) {
-    new (data_ + size_) T(v);
-    size_++;
-    return;
-  }
-  size_t newCap = cap_ * 1.5 + 1;
-  T* newData = static_cast< T* >(::operator new[] (sizeof(T) * newCap));
-  size_t i = 0;
-  try {
-    for (; i < size_; ++i) {
-      new (newData + i)  T(data_[i]);
-    }
-    new (newData + size_)  T(std::forward< U >(v));
-    size_++;
-  } catch (...) {
-    for (size_t j = 0; j < i; ++j) {
-      (newData + j)->~T();
-    }
-    ::operator delete[] (newData);
-    throw;
-  }
-  for (; i > 0; i--) {
-    (data_ + i - 1)->~T();
-  }
-  ::operator delete[] (data_);
-  data_ = newData;
-  cap_ = newCap;
+  size_t newCap = size_ < cap_ ? size_ : cap_ * 1.5 + 1;
+  reserve(newCap);
+  new (data_ + size_) T(std::forward< U >(v));
+  ++size_;
 }
 
 template< class T >
