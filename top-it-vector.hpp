@@ -602,30 +602,16 @@ void kuznetsov::Vector< T >::pushBackCount(size_t k, const T& val)
     }
     return;
   }
-  size_t newCap = cap_ + cap_ / 2 + k;
-  T* copy = static_cast< T* >(::operator new[] (sizeof(T) * newCap));
+  size_t newCap = size_ + k < cap_ ? cap_ : cap_ + cap_ / 2 + k;
+  Vector< T > copy(newCap);
   size_t i = 0;
-  try {
-    for (; i < size_; ++i) {
-      new (copy + i) T(data_[i]);
-    }
-    for (; i < size_ + k; ++i) {
-      new (copy + i) T(val);
-    }
-  } catch (...) {
-    for (; i > 0; --i) {
-      (copy + i - 1)->~T();
-    }
-    ::operator delete[] (copy);
-    throw;
+  for (; i < size_; ++i) {
+    copy.unsafePushBack(data_[i]);
   }
-  for (i = 0; i < size_; ++i) {
-    (data_ + i)->~T();
+  for (; i < size_ + k; ++i) {
+    copy.unsafePushBack(val);
   }
-  ::operator delete[] (data_);
-  data_ = copy;
-  cap_ = newCap;
-  size_ += k;
+  swap(copy);
 }
 
 template< class T >
