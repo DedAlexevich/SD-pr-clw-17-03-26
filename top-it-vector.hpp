@@ -638,46 +638,20 @@ void kuznetsov::Vector< T >::unsafePushBack(const T& val)
 template< class T >
 void kuznetsov::Vector<T>::pushBackRange(CIter<T> start, size_t c)
 {
-  if (size_ + c < cap_) {
-    size_t i = 0;
-    try {
-      for (; i < c; ++i) {
-        new (data_ + size_ + i) T(*start);
-        ++start;
-      }
-      size_ += c;
-    } catch (...) {
-      for (; i > 0; --i) {
-        (data_ + size_ + i - 1)->~T();
-      }
-      throw;
-    }
-    return;
-  }
-
-  size_t newCap = cap_ + cap_ / 2 + c;
-  T* copy = static_cast< T* >(::operator new[] (sizeof(T) * newCap));
+  size_t newCap = size_ + c < cap_ ? size_ + c : cap_ + cap_ / 2 + c;
+  reserve(newCap);
   size_t i = 0;
   try {
-    for (; i < size_; ++i) {
-      new (copy + i) T(data_[i]);
-    }
-    for (; i < size_ + c; ++i) {
-      new (copy + i) T(*start);
+    for (; i < c; ++i) {
+      unsafePushBack(*start);
       ++start;
     }
   } catch (...) {
     for (; i > 0; --i) {
-      (copy + i - 1)->~T();
+      (data_ + size_ + i - 1)->~T();
     }
-    ::operator delete[] (copy);
     throw;
   }
-  for (i = 0; i < size_; ++i) {
-    (data_ + i)->~T();
-  }
-  ::operator delete[] (data_);
-  data_ = copy;
   cap_ = newCap;
   size_ += c;
 }
