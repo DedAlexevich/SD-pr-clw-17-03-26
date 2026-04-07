@@ -641,19 +641,12 @@ void kuznetsov::Vector<T>::pushBackRange(CIter<T> start, size_t c)
   size_t newCap = size_ + c < cap_ ? cap_ : cap_ + cap_ / 2 + c;
   Vector< T > copy(newCap);
   size_t i = 0;
-  try {
-    for (size_t i = 0; i < size_; ++i) {
-      copy.unsafePushBack(data_[i]);
-    }
-    for (i = 0; i < c; ++i) {
-      copy.unsafePushBack(*start);
-      ++start;
-    }
-  } catch (...) {
-    for (; i > 0; --i) {
-      (data_ + size_ + i - 1)->~T();
-    }
-    throw;
+  for (size_t i = 0; i < size_; ++i) {
+    copy.unsafePushBack(data_[i]);
+  }
+  for (i = 0; i < c; ++i) {
+    copy.unsafePushBack(*start);
+    ++start;
   }
   swap(copy);
 }
