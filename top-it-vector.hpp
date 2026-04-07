@@ -587,21 +587,6 @@ const T& kuznetsov::Vector< T >::at(size_t pos) const
 template< class T >
 void kuznetsov::Vector< T >::pushBackCount(size_t k, const T& val)
 {
-  if (size_ + k < cap_) {
-    size_t i = 0;
-    try {
-      for (; i < k; ++i) {
-        new (data_ + size_ + i) T(val);
-      }
-      size_ += k;
-    } catch (...) {
-      for (; i > 0; --i) {
-        (data_ + size_ + i - 1)->~T();
-      }
-      throw;
-    }
-    return;
-  }
   size_t newCap = size_ + k < cap_ ? cap_ : cap_ + cap_ / 2 + k;
   Vector< T > copy(newCap);
   size_t i = 0;
