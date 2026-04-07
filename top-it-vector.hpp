@@ -447,28 +447,15 @@ void kuznetsov::Vector< T >::erase(size_t start, size_t count)
   if (start + count >= size_) {
     count = size_ - start;
   }
-  T* copy = static_cast< T* >(::operator new[] (sizeof(T) * (size_ - count)));
+  Vector< int > copy(size_);
   size_t i = 0;
-  try {
-    for (; i < start; ++i) {
-      new (copy + i) T(data_[i]);
-    }
-    for (; i < size_ - count; ++i) {
-      new (copy + i) T(data_[i + count]);
-    }
-  } catch (...) {
-    for (; i > 0; i--) {
-      (copy + i - 1)->~T();
-    }
-    ::operator delete[] (copy);
-    throw;
+  for (; i < start; ++i) {
+    copy.unsafePushBack((data_[i]));
   }
-  for (i = 0; i < size_; ++i) {
-    (data_ + i)->~T();
+  for (; i < size_ - count; ++i) {
+    copy.unsafePushBack((data_[i + count]));
   }
-  ::operator delete[] (data_);
-  data_ = copy;
-  size_ = size_ - count;
+  swap(copy);
 }
 
 template< class T >
@@ -503,9 +490,7 @@ kuznetsov::CIter< T > kuznetsov::Vector< T >::erase(CIter< T > start, CIter< T >
   }
   size_t startIndex = start - CIter< T >(data_);
   size_t endIndex = end - CIter< T >(data_);
-  size_t count = endIndex - startIndex;
   Vector< T > temp = Vector< T >(size_);
-
   for (size_t i = 0; i < startIndex; ++i) {
     temp.pushBack(data_[i]);
   }
@@ -518,7 +503,6 @@ kuznetsov::CIter< T > kuznetsov::Vector< T >::erase(CIter< T > start, CIter< T >
     temp.pushBack(data_[i]);
   }
   swap(temp);
-
   return CIter< T > {data_ + startIndex};
 }
 
